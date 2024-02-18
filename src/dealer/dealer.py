@@ -10,6 +10,7 @@ class Dealer:
 
     def share_stage(self, secret):
         shares = self.__generate_encrypted_shares(secret)
+        pi_share = self.__pi_pdl()
            
     
     #######################
@@ -37,4 +38,16 @@ class Dealer:
         # Returns the encrypted share (integer)
         pub_key_int = int.from_bytes(pub_key, "little")
         share_int = int.from_bytes(share, "little")
-        return pow(pub_key_int, share_int) 
+        return pow(pub_key_int, share_int)
+
+    def __generate_polynomial(self, secret, shares):
+        # Returns the polynomial used to generate the shares
+        #? Is this the correct polynomial?
+        int_shares = [int.from_bytes(share, "little") for _,share in shares]
+        int_secret = int.from_bytes(secret, "little")
+        polynomial = Polynomial([int_secret] + int_shares)
+        self.__polynomial = polynomial
+
+
+    def __pi_pdl(self, encrypted_shares): 
+        pass
