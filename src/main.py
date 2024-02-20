@@ -5,6 +5,7 @@ from party.party import Party
 
 def create_generator():
     p = generate_probable_safe_prime(exact_bits=2048, randfunc=get_random_bytes)
+    q = (p - 1) >> 1
 
     while True:
         g = pow(Integer.random_range(min_inclusive=2, 
