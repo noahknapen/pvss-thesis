@@ -1,10 +1,13 @@
 from Cryptodome.Protocol.SecretSharing import Shamir
 from Cryptodome.Protocol.SecretSharing import _Element
 from Cryptodome.Random import get_random_bytes
+from Cryptodome.Hash import SHA3_256
 from numpy.polynomial import Polynomial
+from numpy import polyval
+import math
 
 class Dealer:
-    def __init__(self, n, t, q, g, pub_keys):
+    def __init__(self, n, t, q, g, parties):
         """Initialize the dealer with the necessary parameters
 
         Args:
@@ -24,7 +27,7 @@ class Dealer:
         self.t = t
         self.q = q
         self.generator = g
-        self.pub_keys = pub_keys
+        self.parties = parties
 
     def share_secret(self, secret):
         """Given the secret to share, broadcast the encrypted shares and corresponding proof to verify these shares
@@ -33,10 +36,10 @@ class Dealer:
             secret (string):
                 The secret to be shared
         """
-        (coefficients, polynomial) = self.__create_polynomial(secret)
-        encrypted_shares = self.__generate_encrypted_shares(coefficients)
-        pi_share = self.__pi_pdl(polynomial, self.pub_keys, encrypted_shares)
-        self.__broadcast(encrypted_shares, pi_share)
+        (coefficients, f_x) = self.__create_polynomial(secret)
+        encrypted_share_pairs = self.__generate_encrypted_shares(coefficients)
+        pi_share = self.__pi_pdl(f_x, encrypted_share_pairs)
+        self.__broadcast(encrypted_share_pairs, pi_share)
            
     
     #######################
@@ -55,9 +58,7 @@ class Dealer:
         """
 
         coeffs = [_Element(secret)]
-        coeffs.append([_Element(get_random_bytes(16)) for i in range(self.t - 1)]) #? Should self.q be worked into this instead of just 16 bytes?
-        # coeffs = [_Element(get_random_bytes(16)) for i in range(self.t - 1)]
-        # coeffs.append(_Element(secret)) #? Wouldn't this put the secret in the last coefficient?
+        coeffs.append([_Element(get_random_bytes(math.floor(math.log(self.q, 2))+1)) for _ in range(self.n - 1)])
 
         polynomial = Polynomial(coeffs)
 
@@ -76,23 +77,49 @@ class Dealer:
         shares = []
 
         for i in range(1, self.n+1):
-            idx = _Element(i)
+            idx = i 
             share = _Element(0)
             for coeff in coefficients:
                 share = idx * share + coeff
             
-            shares.append(share.encode())
+            shares.append(share)
 
-        encrypted_shares = []
+        encrypted_share_pairs = []
         
         for i in range(len(shares)):
-            # Currently, the normal __pow__ function is used as pub_key is not an _Element
-            encrypted_shares.append((i, pow(self.pub_keys[i], share))) #? _Element overwrites __pow__ so do we want that or not?
+            encrypted_share_pairs.append((i, pow(self.parties[i].get_public_key(), share)))
 
-        return encrypted_shares
+        return encrypted_share_pairs
   
-    def __pi_pdl(self, encrypted_shares): 
-        pass
+    def __pi_pdl(self, polynomial, encrypted_share_pairs):
+        # public keys, indices and encrypted shares
+        (coeffs, r_x) = self.__create_polynomial(_Element(get_random_bytes(math.floor(math.log(self.q, 2))+1)))
+        inv_coeffs = coeffs.reverse()
+        encrypted_r_x = []
+
+        for i in range(0, self.n):
+            r_i = polyval(inv_coeffs, i)
+            encrypted_r_x.append(pow(self.parties[i].get_public_key, r_i))
+
+        args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
+
+        d = self.__get_random_oracle_value(args)
+
+        z_x = r_x + d*polynomial
+
+        return (encrypted_r_x, z_x)
+    
+    def __get_random_oracle_value(self, *args):
+        data = ""
+
+        for arg in args:
+            data += arg
+
+        binary_data = data.encode('utf-8')
+        hash_class = SHA3_256.new()
+        hash_class.update(binary_data)
+        binary_hash = hash_class.digest()
+        return int.from_bytes(binary_hash, "little")
 
     def __broadcast(self, encrypted_shares, pi_share):
         pass

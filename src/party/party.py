@@ -1,9 +1,9 @@
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.asymmetric import dh as keygen
 
 class Party:
     def __init__(self, generator, key_size):
-        dh_parameters = dh.generate_parameters(generator=generator, key_size=key_size) #TODO: Change generator and key_size to something more secure
-        self.__private_key = dh_parameters.generate_private_key()
+        keygen_parameters = keygen.generate_parameters(generator=generator, key_size=key_size)
+        self.__private_key = keygen_parameters.generate_private_key()
 
 
     def get_public_key(self):

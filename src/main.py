@@ -27,12 +27,9 @@ def create_generator():
 def main():
     generator = create_generator()
     party_list = []
-    pub_keys = []
 
     for _ in range(5):
         party_list.append(Party(generator, 2048))
-        pub_keys.append(party_list[-1].get_public_key())
-   
 
 
 if __name__ == '__main__':
