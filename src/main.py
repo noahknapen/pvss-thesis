@@ -28,8 +28,8 @@ def main():
     generator = create_generator()
     party_list = []
 
-    for _ in range(5):
-        party_list.append(Party(generator, 2048))
+    for i in range(5):
+        party_list.append(Party(i, generator, 2048))
 
 
 if __name__ == '__main__':
