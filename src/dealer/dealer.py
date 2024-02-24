@@ -122,4 +122,5 @@ class Dealer:
         return int.from_bytes(binary_hash, "little")
 
     def __broadcast(self, encrypted_shares, pi_share):
-        pass
+        for party in self.parties:
+            party.receive_share_and_proof(encrypted_shares, pi_share)

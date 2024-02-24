@@ -9,7 +9,6 @@ class Party:
         self.encrypted_share = None
         self.proof = None
 
-
     def get_public_key(self):
         return self.__private_key.public_key()
         
