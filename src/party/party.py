@@ -60,9 +60,31 @@ class Party:
         share_proof = self.__nizk_proof_for_dleq(share)
         self.__broadcast((self.number, share), share_proof)
 
+    def reconstruct_secret(self):
+        # Assume self.decrypted_share_pairs is an ordered list of tuples (i, share)
+        exponent = 0
+
+        for i in range(0, self.t+1):
+            decrypted_share = self.decrypted_share_pairs[i][1]
+            lagrange_coeff = self.__compute_lagrange_coefficient(i)
+            exponent += lagrange_coeff * decrypted_share
+
+        return pow(self.generator, exponent)
+
     #######################
     ### PRIVATE METHODS ###
     #######################
+
+    def __compute_lagrange_coefficient(self, i):
+        numerator = 1
+        denominator = 1
+
+        for j in range(0, self.t+1):
+            if j != i:
+                numerator *= j
+                denominator *= j - i
+
+        return numerator / denominator
         
     def __get_random_oracle_value(self, *args):
         data = ""
