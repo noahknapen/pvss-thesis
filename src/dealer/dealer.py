@@ -2,8 +2,8 @@ from Cryptodome.Protocol.SecretSharing import Shamir
 from Cryptodome.Protocol.SecretSharing import _Element
 from Cryptodome.Random import get_random_bytes
 from Cryptodome.Hash import SHA3_256
-from numpy.polynomial import Polynomial
-from numpy import polyval
+from numpy.polynomial.polynomial import Polynomial 
+from numpy.polynomial.polynomial import polyval
 import math
 
 class Dealer:
@@ -94,11 +94,10 @@ class Dealer:
     def __pi_pdl(self, polynomial, encrypted_share_pairs):
         # public keys, indices and encrypted shares
         (coeffs, r_x) = self.__create_polynomial(_Element(get_random_bytes(math.floor(math.log(self.q, 2))+1)))
-        inv_coeffs = coeffs.reverse()
         encrypted_r_x = []
 
         for i in range(0, self.n):
-            r_i = polyval(inv_coeffs, i)
+            r_i = polyval(coeffs, i+1)
             encrypted_r_x.append(pow(self.parties[i].get_public_key, r_i))
 
         args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
