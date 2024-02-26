@@ -5,18 +5,17 @@ from numpy.polynomial.polynomial import polyval
 import math
 
 class Party:
-    def __init__(self, party_number, generator, t, parties, key_size):
+    def __init__(self, party_number, generator, t, key_size):
         keygen_parameters = keygen.generate_parameters(generator=generator, key_size=key_size)
         self.__private_key = keygen_parameters.generate_private_key()
         self.public_key = self.__private_key.public_key()
         self.generator = generator
         self.number =  party_number
         self.t = t
-        self.parties = parties
+        self.parties = None
         self.encrypted_share_pairs = None
         self.encrypted_share = None
         self.dealer_proof = None
-        self.pub_keys = None
         self.decrypted_share_pairs = []
 
     def get_public_key(self):
@@ -27,13 +26,9 @@ class Party:
         self.encrypted_share = self.encrypted_share_pairs[self.number]
         self.dealer_proof = pi_share
 
-    def receive_public_keys(self, pub_keys):
-        self.pub_keys = pub_keys
-    
-    def receive_decrypted_share_and_proof(self, decrypted_share_pair, share_proof):
-        if share_proof: #TODO: implement verification of proof
-            self.decrypted_share_pairs.append(decrypted_share_pair)
-
+    def receive_party_objects(self, parties):
+        self.parties = parties
+     
     def verify_shares(self):
         d = self.dealer_proof[0]
         z_x = self.dealer_proof[1]
@@ -59,6 +54,10 @@ class Party:
         share = pow(self.encrypted_share, 1/self.__private_key)
         share_proof = self.__nizk_proof_for_dleq(share)
         self.__broadcast((self.number, share), share_proof)
+        
+    def receive_decrypted_share_and_proof(self, decrypted_share_pair, share_proof):
+        if share_proof: #TODO: implement verification of proof
+            self.decrypted_share_pairs.append(decrypted_share_pair)
 
     def reconstruct_secret(self):
         # Assume self.decrypted_share_pairs is an ordered list of tuples (i, share)

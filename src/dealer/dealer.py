@@ -122,4 +122,4 @@ class Dealer:
 
     def __broadcast(self, encrypted_shares, pi_share):
         for party in self.parties:
-            party.receive_share_and_proof(encrypted_shares, pi_share)
+            party.receive_shares_and_dealer_proof(encrypted_shares, pi_share)
