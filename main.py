@@ -1,8 +1,8 @@
 from Cryptodome.Math.Primality import generate_probable_safe_prime
 from Cryptodome.Math.Numbers import Integer
 from Cryptodome.Random import get_random_bytes
-from party.party import Party
-from dealer.dealer import Dealer
+from party import Party
+from dealer import Dealer
 
 def create_generator_and_prime_pair():
     p = generate_probable_safe_prime(exact_bits=2048, randfunc=get_random_bytes)
