@@ -8,14 +8,16 @@ class TestDealer(unittest.TestCase):
         
     def test_create_polynomial(self):
         dealer = Dealer(3, 3, 5, 2, [])
-        (coeffs, pol) = dealer.create_polynomial("Hello world")
+        (coeffs, pol) = dealer.create_polynomial("Hello world") #! Adapted polyutils.py line 134 by appending dtype=object or else it threw an error
 
         self.assertEqual(len(coeffs), 3)
-        for coeff in coeffs:
-            self.assertIn(coeff, range(0, 5))
+        for i in range(1, len(coeffs)):
+            self.assertIn(coeffs[i]._value, range(5))
 
-        self.assertEqual(pol.coef, coeffs)
-        self.assertEqual(pol.degree, 3)
+        self.assertEqual(pol.degree(), 2)
+        self.assertEqual(len(pol.coef), 3)
+        for i in range(3):
+            self.assertEqual(pol.coef[i], coeffs[i])
 
     def test_generate_encrypted_shares(self):
         dealer = Dealer(3, 3, 5, 2, []) # TODO: Need parties for this

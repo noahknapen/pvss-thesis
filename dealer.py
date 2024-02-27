@@ -1,6 +1,7 @@
 from Cryptodome.Protocol.SecretSharing import Shamir
 from Cryptodome.Protocol.SecretSharing import _Element
 from Cryptodome.Random import get_random_bytes
+from Cryptodome.Random.random import randint
 from Cryptodome.Hash import SHA3_256
 from numpy.polynomial.polynomial import Polynomial 
 from numpy.polynomial.polynomial import polyval
@@ -28,6 +29,7 @@ class Dealer:
         self.q = q
         self.generator = g
         self.parties = parties
+        self.secret = None
 
     def share_secret(self, secret):
         """Given the secret to share, broadcast the encrypted shares and corresponding proof to verify these shares
@@ -36,8 +38,9 @@ class Dealer:
             secret (string):
                 The secret to be shared
         """
-        (coefficients, f_x) = self.__create_polynomial(secret)
-        encrypted_share_pairs = self.__generate_encrypted_shares(coefficients)
+        self.secret = secret
+        (coefficients, f_x) = self.create_polynomial(secret)
+        encrypted_share_pairs = self.generate_encrypted_shares(coefficients)
         pi_share = self.__pi_pdl(f_x, encrypted_share_pairs)
         self.__broadcast(encrypted_share_pairs, pi_share)
            
@@ -46,7 +49,7 @@ class Dealer:
     ### PRIVATE METHODS ###
     #######################
 
-    def __create_polynomial(self, secret):
+    def create_polynomial(self, secret):
         """Conform with the Shamir secret sharing scheme, create a polynomial with random coefficients in GF(2^128): p(x) = \sum_{i=0}^{k-1} c_i * x^i where c_0 is the encoded secret
         
         Args:
@@ -57,14 +60,14 @@ class Dealer:
             A tuple consisting of the coefficients and the polynomial, respectively
         """
 
-        coeffs = [_Element(secret)]
-        coeffs.append([_Element(get_random_bytes(math.floor(math.log(self.q, 2))+1)) for _ in range(self.n - 1)])
-
+        int_secret = int.from_bytes(secret.encode('utf-8'), "little")
+        coeffs = [_Element(int_secret)]
+        coeffs += [_Element(randint(0, self.q-1)) for _ in range(self.n - 1)]
         polynomial = Polynomial(coeffs)
 
         return (coeffs, polynomial) 
  
-    def __generate_encrypted_shares(self, coefficients):
+    def generate_encrypted_shares(self, coefficients):
         """Given the coefficients of the polynomial generated according to the Shamir secret sharing scheme, generate the encrypted shares for each party where each share is encrypted in an ElGamal-like manner
 
         Args:
