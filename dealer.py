@@ -80,7 +80,7 @@ class Dealer:
         shares = []
 
         for i in range(1, self.n+1):
-            idx = i 
+            idx = _Element(i)
             share = _Element(0)
             for coeff in coefficients:
                 share = idx * share + coeff
@@ -89,8 +89,8 @@ class Dealer:
 
         encrypted_share_pairs = []
         
-        for i in range(len(shares)):
-            encrypted_share_pairs.append((i, pow(self.parties[i].get_public_key(), share)))
+        for i in range(self.n):
+            encrypted_share_pairs.append((i, pow(_Element(self.parties[i].public_key), int(share))))
 
         return encrypted_share_pairs
   
@@ -101,7 +101,7 @@ class Dealer:
 
         for i in range(0, self.n):
             r_i = polyval(coeffs, i+1)
-            encrypted_r_x.append(pow(self.parties[i].get_public_key, r_i))
+            encrypted_r_x.append(pow(self.parties[i].public_key, r_i))
 
         args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
 
