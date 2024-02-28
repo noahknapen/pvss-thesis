@@ -1,14 +1,15 @@
-from cryptography.hazmat.primitives.asymmetric import dh as keygen
 from Cryptodome.Hash import SHA3_256
 from Cryptodome.Random import get_random_bytes
 from numpy.polynomial.polynomial import polyval
 import math
+from Cryptodome.Math.Numbers import Integer
 
 class Party:
-    def __init__(self, party_number, generator, t, key_size):
-        keygen_parameters = keygen.generate_parameters(generator=generator, key_size=key_size)
-        self.__private_key = keygen_parameters.generate_private_key()
-        self.public_key = self.__private_key.public_key()
+    def __init__(self, party_number, generator, t, group_order):
+        self.private_key = Integer.random_range(min_inclusive=2,
+                                 max_exclusive=group_order-1,
+                                 randfunc=get_random_bytes)
+        self.public_key = pow(generator, int(self.private_key), group_order)
         self.generator = generator
         self.number =  party_number
         self.t = t
@@ -46,14 +47,14 @@ class Party:
             encrypted_r_x.append(encrypted_z_i / divider)
             
         args = [encrypted_share_pair[1] for encrypted_share_pair in self.encrypted_share_pairs] + encrypted_r_x
-        d_test = self.__get_random_oracle_value(args)
+        d_test = self.get_random_oracle_value(args)
 
         return d == d_test
 
     def publish_decrypted_share_and_proof(self):
-        share = pow(self.encrypted_share, 1/self.__private_key)
-        share_proof = self.__nizk_proof_for_dleq(share)
-        self.__broadcast((self.number, share), share_proof)
+        share = pow(self.encrypted_share, 1/self.private_key)
+        share_proof = self.nizk_proof_for_dleq(share)
+        self.broadcast((self.number, share), share_proof)
         
     def receive_decrypted_share_and_proof(self, decrypted_share_pair, share_proof):
         if share_proof: #TODO: implement verification of proof
@@ -65,7 +66,7 @@ class Party:
 
         for i in range(0, self.t+1):
             decrypted_share = self.decrypted_share_pairs[i][1]
-            lagrange_coeff = self.__compute_lagrange_coefficient(i)
+            lagrange_coeff = self.compute_lagrange_coefficient(i)
             exponent += lagrange_coeff * decrypted_share
 
         return pow(self.generator, exponent)
@@ -74,7 +75,7 @@ class Party:
     ### PRIVATE METHODS ###
     #######################
 
-    def __compute_lagrange_coefficient(self, i):
+    def compute_lagrange_coefficient(self, i):
         numerator = 1
         denominator = 1
 
@@ -85,7 +86,7 @@ class Party:
 
         return numerator / denominator
         
-    def __get_random_oracle_value(self, *args):
+    def get_random_oracle_value(self, *args):
         data = ""
 
         for arg in args:
@@ -97,12 +98,12 @@ class Party:
         binary_hash = hash_class.digest()
         return int.from_bytes(binary_hash, "little")
         
-    def __nizk_proof_for_dleq(self, decrypted_share):
+    def nizk_proof_for_dleq(self, decrypted_share):
         r = get_random_bytes(math.floor(math.log(self.q, 2))+1)
-        d = self.__get_random_oracle_value(self.public_key, self.encrypted_share, pow(self.generator, r), pow(decrypted_share, r))
-        z = r + d*self.__private_key
+        d = self.get_random_oracle_value(self.public_key, self.encrypted_share, pow(self.generator, r), pow(decrypted_share, r))
+        z = r + d*self.private_key
 
-    def __broadcast(self, decrypted_share, share_proof):
+    def broadcast(self, decrypted_share, share_proof):
         for party in self.parties:
             party.receive_decrypted_share_and_proof(decrypted_share, share_proof)
     

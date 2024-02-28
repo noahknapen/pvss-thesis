@@ -34,7 +34,7 @@ def main():
     party_list = []
 
     for i in range(n):
-        party_list.append(Party(i, generator, 2048))
+        party_list.append(Party(i, generator, t, prime_pair[1]))
     
     # Share stage
     dealer = Dealer(n, t, prime_pair[1], generator, party_list)
