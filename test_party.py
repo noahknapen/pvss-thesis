@@ -10,6 +10,7 @@ class TestParty(unittest.TestCase):
         self.assertEqual(party.public_key, pow(2, int(party.private_key), 7))
         self.assertIsInstance(party, Party)
     
+    
 
 if __name__ == '__main__':
     unittest.main()

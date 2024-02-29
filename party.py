@@ -1,7 +1,7 @@
 from Cryptodome.Hash import SHA3_256
+from Cryptodome.Random.random import randint
 from Cryptodome.Random import get_random_bytes
 from numpy.polynomial.polynomial import polyval
-import math
 from Cryptodome.Math.Numbers import Integer
 
 class Party:
@@ -13,15 +13,13 @@ class Party:
         self.generator = generator
         self.number =  party_number
         self.t = t
+        self.q = group_order
         self.parties = None
         self.encrypted_share_pairs = None
         self.encrypted_share = None
         self.dealer_proof = None
         self.decrypted_share_pairs = []
 
-    def get_public_key(self):
-        return self.public_key
-        
     def receive_shares_and_dealer_proof(self, encrypted_share_pairs, pi_share):
         self.encrypted_share_pairs = encrypted_share_pairs
         self.encrypted_share = self.encrypted_share_pairs[self.number]
@@ -42,8 +40,8 @@ class Party:
 
         for i in range(0, self.n):
             z_i = polyval(z_x_coeffs, i+1)
-            encrypted_z_i = pow(self.parties[i].get_public_key, z_i)
-            divider = pow(self.encrypted_share_pairs[i],d)
+            encrypted_z_i = pow(self.parties[i].public_key, z_i, self.q) #? This also in mod q?
+            divider = pow(self.encrypted_share_pairs[i], d, self.q) #? This also in mod q?
             encrypted_r_x.append(encrypted_z_i / divider)
             
         args = [encrypted_share_pair[1] for encrypted_share_pair in self.encrypted_share_pairs] + encrypted_r_x
@@ -52,7 +50,7 @@ class Party:
         return d == d_test
 
     def publish_decrypted_share_and_proof(self):
-        share = pow(self.encrypted_share, 1/self.private_key)
+        share = pow(self.encrypted_share, 1/self.private_key, self.q)
         share_proof = self.nizk_proof_for_dleq(share)
         self.broadcast((self.number, share), share_proof)
         
@@ -86,7 +84,7 @@ class Party:
 
         return numerator / denominator
         
-    def get_random_oracle_value(self, *args):
+    def get_random_oracle_value(self, args):
         data = ""
 
         for arg in args:
@@ -99,8 +97,8 @@ class Party:
         return int.from_bytes(binary_hash, "little")
         
     def nizk_proof_for_dleq(self, decrypted_share):
-        r = get_random_bytes(math.floor(math.log(self.q, 2))+1)
-        d = self.get_random_oracle_value(self.public_key, self.encrypted_share, pow(self.generator, r), pow(decrypted_share, r))
+        r = randint(0, self.q-1) 
+        d = self.get_random_oracle_value(self.public_key, self.encrypted_share, pow(self.generator, r, self.q), pow(decrypted_share, r, self.q)) #? This also in mod q?
         z = r + d*self.private_key
 
     def broadcast(self, decrypted_share, share_proof):

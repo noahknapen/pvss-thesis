@@ -56,7 +56,7 @@ class Dealer:
             A tuple consisting of the coefficients and the polynomial, respectively
         """
 
-        int_secret = int.from_bytes(secret.encode('utf-8'), "little")
+        int_secret = int.from_bytes(secret.encode('utf-8'), "little") #? Does the secret also have to be mod q?
         coeffs = [int_secret]
         coeffs += [randint(0, self.q-1) for _ in range(self.n - 1)]
         polynomial = Polynomial(coeffs)
@@ -86,18 +86,17 @@ class Dealer:
         encrypted_share_pairs = []
         
         for i in range(self.n):
-            encrypted_share_pairs.append((i, pow(self.parties[i].public_key, share)))
+            encrypted_share_pairs.append((i, pow(self.parties[i].public_key, share, self.q))) #? The power should here be in base q, right?
 
         return encrypted_share_pairs
   
     def pi_pdl(self, polynomial, encrypted_share_pairs):
         # public keys, indices and encrypted shares
         (coeffs, r_x) = self.create_polynomial(str(randint(0, self.q-1)))
-        int_coeffs = [int(coeff) for coeff in coeffs]
         encrypted_r_x = []
 
         for i in range(self.n):
-            r_i = polyval(int_coeffs, i+1)
+            r_i = polyval(coeffs, i+1)
             encrypted_r_x.append(pow(self.parties[i].public_key, r_i))
 
         args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
