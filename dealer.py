@@ -1,11 +1,7 @@
-from Cryptodome.Protocol.SecretSharing import Shamir
-from Cryptodome.Protocol.SecretSharing import _Element
-from Cryptodome.Random import get_random_bytes
 from Cryptodome.Random.random import randint
 from Cryptodome.Hash import SHA3_256
 from numpy.polynomial.polynomial import Polynomial 
 from numpy.polynomial.polynomial import polyval
-import math
 
 class Dealer:
     def __init__(self, n, t, q, g, parties):
@@ -61,8 +57,8 @@ class Dealer:
         """
 
         int_secret = int.from_bytes(secret.encode('utf-8'), "little")
-        coeffs = [_Element(int_secret)]
-        coeffs += [_Element(randint(0, self.q-1)) for _ in range(self.n - 1)]
+        coeffs = [int_secret]
+        coeffs += [randint(0, self.q-1) for _ in range(self.n - 1)]
         polynomial = Polynomial(coeffs)
 
         return (coeffs, polynomial) 
@@ -80,8 +76,8 @@ class Dealer:
         shares = []
 
         for i in range(1, self.n+1):
-            idx = _Element(i)
-            share = _Element(0)
+            idx = i
+            share = 0
             for coeff in coefficients:
                 share = idx * share + coeff
             
@@ -90,7 +86,7 @@ class Dealer:
         encrypted_share_pairs = []
         
         for i in range(self.n):
-            encrypted_share_pairs.append((i, pow(_Element(self.parties[i].public_key), int(share))))
+            encrypted_share_pairs.append((i, pow(self.parties[i].public_key, share)))
 
         return encrypted_share_pairs
   
@@ -126,7 +122,7 @@ class Dealer:
         added_coeffs = []
         
         for i in range(pol1.degree()+1):
-            added_coeffs.append(int(pol1.coef[i]) + int(pol2.coef[i]))
+            added_coeffs.append(pol1.coef[i] + pol2.coef[i])
 
         return Polynomial(added_coeffs)
     
