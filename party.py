@@ -55,7 +55,7 @@ class Party:
         self.broadcast((self.number, share), share_proof)
         
     def receive_decrypted_share_and_proof(self, decrypted_share_pair, share_proof):
-        if share_proof: #TODO: implement verification of proof
+        if self.is_verified_share(decrypted_share_pair, share_proof): #TODO: implement verification of proof
             self.decrypted_share_pairs.append(decrypted_share_pair)
 
     def reconstruct_secret(self):
@@ -100,6 +100,18 @@ class Party:
         r = randint(0, self.q-1) 
         d = self.get_random_oracle_value(self.public_key, self.encrypted_share, pow(self.generator, r, self.q), pow(decrypted_share, r, self.q)) #? This also in mod q?
         z = r + d*self.private_key
+
+    def is_verified_share(self, decrypted_share_pair, share_proof):
+        i = decrypted_share_pair[0]
+        h = decrypted_share_pair[1]
+        a = self.parties[i].public_key
+        b = self.encrypted_share_pairs[i][1]
+        d = share_proof[0]
+        z = share_proof[1]
+
+        d_test = self.get_random_oracle_value([a, b, pow(self.generator, z, self.q) / pow(a, d, self.q), pow(h, z, self.q) / pow(b, d, self.q)])
+
+        return d == d_test
 
     def broadcast(self, decrypted_share, share_proof):
         for party in self.parties:
