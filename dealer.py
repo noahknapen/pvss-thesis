@@ -53,7 +53,7 @@ class Dealer:
         """
 
         coeffs = [secret]
-        coeffs += [randint(0, self.q-1) for _ in range(self.n - 1)]
+        coeffs += [randint(0, self.q-1) for _ in range(self.t)]
         polynomial = Polynomial(coeffs)
 
         return (coeffs, polynomial) 
@@ -73,8 +73,8 @@ class Dealer:
         encrypted_share_pairs = []
         
         for i in range(1, self.n+1):
-            share = polyval(coefficients, i) # share[i] = f(i)
-            encrypted_share_pairs.append((i, pow(self.parties[i].public_key, share, self.q))) #? The power should here be in base q, right?
+            share = int(polyval(i, coefficients)) # share[i] = f(i)
+            encrypted_share_pairs.append((i, pow(self.parties[i-1].public_key, share, self.q))) #? The power should here be in base q, right?
 
         return encrypted_share_pairs
   
@@ -94,12 +94,12 @@ class Dealer:
             result (tuple (list (integer), Polynomial)):
                 A tuple with the first element being a list of the encrypted `r(i)` evaluations and the second element the polynomial `z(x)` as described above
         """
-        (r_x_coeffs, r_x) = self.create_polynomial(str(randint(0, self.q-1)))
+        (r_x_coeffs, r_x) = self.create_polynomial(randint(0, self.q-1))
         encrypted_r_x = []
 
         for i in range(len(encrypted_share_pairs)):
-            r_i = polyval(r_x_coeffs, encrypted_share_pairs[i][0]) # Evaluate r(x) in the index of each party (1 through n)
-            encrypted_r_x.append(pow(self.parties[i].public_key, r_i))
+            r_i = int(polyval(encrypted_share_pairs[i][0], r_x_coeffs)) # Evaluate r(x) in the index of each party (1 through n)
+            encrypted_r_x.append(pow(self.parties[i].public_key, r_i, self.q))
 
         args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
         d = self.get_random_oracle_value(args)
@@ -107,7 +107,7 @@ class Dealer:
         d_polynomial = self.multiply_polynomial(d, polynomial)
         z_x = self.add_polynomial(r_x, d_polynomial)
 
-        return (encrypted_r_x, z_x)
+        return (d, z_x)
 
     def multiply_polynomial(self, d, polynomial):
         """Given an integer and a polynomial, return the multiplication

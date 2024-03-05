@@ -1,25 +1,31 @@
 from Cryptodome.Math.Primality import generate_probable_safe_prime
+from Cryptodome.Util.number import inverse
 from Cryptodome.Math.Numbers import Integer
 from Cryptodome.Random import get_random_bytes
 from party import Party
 from dealer import Dealer
 
-def create_generator_and_prime_pair():
-    p = generate_probable_safe_prime(exact_bits=2048, randfunc=get_random_bytes)
-    q = (p - 1) >> 1
+def create_generator_and_prime_pair(prime_pair=None):
+    if prime_pair is not None:
+        p = prime_pair[0]
+        q = prime_pair[1]
+        assert q == (p-1) >> 1
+    else:
+        p = generate_probable_safe_prime(exact_bits=2048, randfunc=get_random_bytes)
+        q = (p - 1) >> 1
 
     while True:
-        g = pow(Integer.random_range(min_inclusive=2, 
+        g = int(pow(Integer.random_range(min_inclusive=2, 
                                      max_inclusive=p, 
-                                     randfunc=get_random_bytes), 2, p)
+                                     randfunc=get_random_bytes), 2, p))
 
-        if g in (1, 2):
+        if g in (0, 1, 2):
             continue
 
         if (p-1) % g == 0:
             continue
 
-        g_inv = g.inverse(p)
+        g_inv = inverse(g, p)
         if (p-1) % g_inv == 0:
             continue
 
