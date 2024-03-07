@@ -11,7 +11,7 @@ def create_generator_and_prime_pair(prime_pair=None):
         q = prime_pair[1]
         assert q == (p-1) >> 1
     else:
-        p = generate_probable_safe_prime(exact_bits=2048, randfunc=get_random_bytes)
+        p = int(generate_probable_safe_prime(exact_bits=256, randfunc=get_random_bytes))
         q = (p - 1) >> 1
 
     while True:

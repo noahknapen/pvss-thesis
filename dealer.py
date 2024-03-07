@@ -2,6 +2,7 @@ from Cryptodome.Random.random import randint
 from Cryptodome.Hash import SHA3_256
 from numpy.polynomial.polynomial import Polynomial 
 from numpy.polynomial.polynomial import polyval
+from Cryptodome.Util.number import inverse
 
 class Dealer:
     def __init__(self, n, t, q, g, parties):
@@ -104,8 +105,11 @@ class Dealer:
         args = [encrypted_share_pair[1] for encrypted_share_pair in encrypted_share_pairs] + encrypted_r_x
         d = self.get_random_oracle_value(args)
 
-        d_polynomial = self.multiply_polynomial(d, polynomial)
-        z_x = self.add_polynomial(r_x, d_polynomial)
+        # d_polynomial = self.multiply_polynomial(d, polynomial)
+        # z_x = self.add_polynomial(r_x, d_polynomial) #! z_x is not computed correctly
+
+        z_x_coeffs = [(r_x_coeffs[i] + d*polynomial.coef[i]) for i in range(r_x.degree()+1)] #? This works if z_x_coeffs are not taken `mod q`. If they are, it stops working
+        z_x = Polynomial(z_x_coeffs)
 
         return (d, z_x)
 

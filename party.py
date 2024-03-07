@@ -62,7 +62,7 @@ class Party:
             encrypted_z_i = pow(self.parties[i].public_key, z_i, self.q)
             inv_encrypted_share = inverse(self.encrypted_share_pairs[i][1], self.q)
             yd = pow(inv_encrypted_share, d, self.q)
-            encrypted_r_x.append(encrypted_z_i * yd)
+            encrypted_r_x.append((encrypted_z_i * yd) % self.q)
             
         args = [encrypted_share_pair[1] for encrypted_share_pair in self.encrypted_share_pairs] + encrypted_r_x
         d_test = self.get_random_oracle_value(args)

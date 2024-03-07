@@ -7,9 +7,7 @@ from main import create_generator_and_prime_pair
 
 class TestInteraction(unittest.TestCase):
     def test_init(self):
-        p = 11
-        q = 5
-        (g, _) = create_generator_and_prime_pair((p,q))
+        (g, (p,q)) = create_generator_and_prime_pair()
         n = 3
         t = 2
         party_list = []
@@ -45,7 +43,7 @@ class TestInteraction(unittest.TestCase):
             assert party.dealer_proof == pi_share
 
         for party in party_list:
-            assert True == party.verify_encrypted_shares(party_list) #! This fails sometimes
+            assert True == party.verify_encrypted_shares(party_list)
 
         for party in party_list:
             dec_share = party.generate_decrypted_share()
@@ -61,6 +59,7 @@ class TestInteraction(unittest.TestCase):
         for party in party_list:
             assert len(party.unverified_share_pairs_and_proof) == len(party_list)
             party.verify_decrypted_shares()
+            print("" + str(len(party.verified_share_pairs)))
             assert len(party.verified_share_pairs) == len(party_list)
         
 
