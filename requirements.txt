@@ -1,0 +1,9 @@
+asn1crypto==1.5.1
+cffi==1.16.0
+click==7.1.2
+cryptography==42.0.3
+lazy==1.6
+numpy==1.26.4
+pvss==0.2.0
+pycparser==2.21
+pycryptodomex==3.20.0
