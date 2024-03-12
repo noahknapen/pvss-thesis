@@ -1,18 +1,16 @@
 from Cryptodome.Hash import SHA3_256
 from Cryptodome.Random.random import randint
-from Cryptodome.Random import get_random_bytes
 from numpy.polynomial.polynomial import polyval
-from Cryptodome.Math.Numbers import Integer
 from Cryptodome.Util.number import inverse
+from Cryptodome.PublicKey import ECC
 
 class Party:
     def __init__(self, party_number, generator, n, t, group_order):
         """Initialization of the party
         """
-        self.private_key = int(Integer.random_range(min_inclusive=2,
-                                 max_exclusive=group_order,
-                                 randfunc=get_random_bytes))
-        self.public_key = pow(generator, self.private_key, group_order)
+        ec = ECC.generate(curve='ed25519') 
+        self.private_key = ec.d
+        self.public_key = ec.pointQ
         self.generator = generator
         self.number =  party_number
         self.n = n

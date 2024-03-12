@@ -1,14 +1,18 @@
 import unittest
-from unittest.mock import Mock
 from party import Party
-from Cryptodome.Protocol.SecretSharing import _Element
-from numpy.polynomial.polynomial import Polynomial 
+from main import get_ed25519_domain_parameters
 
 class TestParty(unittest.TestCase):
     def test_initialization(self):
-        party = Party(0, 2, 3, 7)
-        self.assertEqual(party.public_key, pow(2, int(party.private_key), 7))
-        self.assertIsInstance(party, Party)
+        (p, G) = get_ed25519_domain_parameters()
+        n = 3
+        t = 2
+
+        party1 = Party(0, G, n, t, p)
+        party2 = Party(0, G, n, t, p)
+
+        assert party1.public_key*party2.private_key == party2.public_key*party1.private_key
+    
     
     
 
