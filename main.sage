@@ -7,6 +7,7 @@ Am = 486662          # Montgomery A-coefficient
 Ar = int((Am+2)/4)   # reduced Montgomery coefficent
 E = EllipticCurve(GF(p),[0,Am,0,1,0])
 RP.<x> = PolynomialRing(Zq)
+global_secret = 0
 
 G = E.random_point() # generator 
 while G.order() != q:
@@ -96,13 +97,16 @@ def fast_multiply(k,P): # use montgomery ladder and y-recovery
 class Party:
     def __init__(self, index, n):
         self.n = n
-        self.index = index
+        self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
-        self.public_key = Integer(self.secret_key) * G
+        self.public_key = fast_multiply(Integer(self.secret_key), G)
         self.public_keys = [0 for _ in range(self.n)]
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.dealer_proof = [0,0]
-        self.decrypted_shares = [0 for _ in range(self.n)]
+        self.dec_share = 0
+        self.share_proof = [0,0]
+        self.decrypted_shares_and_proof = [0 for _ in range(self.n)]
+        self.valid_decrypted_shares = []
     
     def publish_public_key(self):
         return self.public_key
@@ -114,9 +118,8 @@ class Party:
         self.encrypted_shares = encrypted_shares
         self.dealer_proof = dealer_proof
     
-    def receive_decrypted_share_and_proof(self, index, dec_share, share_proof):
-        if self.verify_decrypted_share(index, dec_share, share_proof):
-            self.decrypted_shares.append(dec_share)
+    def receive_decrypted_shares_and_proofs(self, dec_shares_and_proofs):
+        self.decrypted_shares_and_proof = dec_shares_and_proofs
 
     def verify_encrypted_shares(self):    
         d = self.dealer_proof[0]
@@ -131,69 +134,94 @@ class Party:
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
-        reconstructed_d = Integer(Zq(int(sha256(str(temp_d1)+str(temp_d2)).hexdigest(),16)))
+        reconstructed_d = Integer(Zq(int(sha256((str(temp_d1)+str(temp_d2)).encode()).hexdigest(),16)))
 
         return d == reconstructed_d
     
     def broadcast_decrypted_share_and_proof(self):
-        dec_share = self.generate_decrypted_share()
-        share_proof = self.nizk_proof_for_dleq(dec_share)
-        return dec_share, share_proof
+        return self.dec_share, self.share_proof
     
     def generate_decrypted_share(self):
         inv_priv_key = Integer(self.secret_key).inverse_mod(q)
-        dec_share = fast_multiply(inv_priv_key, self.encrypted_shares[self.index-1])
-        return dec_share
+        self.dec_share = fast_multiply(inv_priv_key, self.encrypted_shares[self.index-1])
     
-    def nizk_proof_for_dleq(self, dec_share):
+    def nizk_proof_for_dleq(self):
         r = Zq.random_element()
         c1 = fast_multiply(r, G)
-        c2 = fast_multiply(r, dec_share[self.index-1])
+        c2 = fast_multiply(r, self.dec_share)
 
+        #print("Proof party ", self.index, " : ", self.public_key, self.encrypted_shares[self.index-1], c1,c2)
         d = sha256(str(self.public_key).encode()).hexdigest() + str(",")
         d += sha256(str(self.encrypted_shares[self.index-1]).encode()).hexdigest() + str(",")
         d += sha256(str(c1).encode()).hexdigest() + str(",")
         d += sha256(str(c2).encode()).hexdigest()
 
-        d = Integer(Zq(int(d,16)))
-        z = Integer(Zq(int(r + d*self.secret_key,16)))
+        d = Integer(Zq(int(sha256(str(d).encode()).hexdigest(),16)))
+        z = r + d*self.secret_key
 
-        return d,z
+        self.share_proof = [d,z]
 
-    def verify_decrypted_share(self, index, dec_share, share_proof):
-        d = share_proof[0]
-        z = share_proof[1]
+    def verify_decrypted_shares(self):
+        for i in range(len(self.decrypted_shares_and_proof)):
+            dec_share = self.decrypted_shares_and_proof[i][0]
+            share_proof = self.decrypted_shares_and_proof[i][1]
+            d = share_proof[0]
+            z = share_proof[1]
 
-        nominator1 = fast_multiply(z, G)
-        nominator2 = fast_multiply(z, dec_share)
+            nominator1 = fast_multiply(z, G)
+            nominator2 = fast_multiply(z, dec_share)
 
-        denominator1 = fast_multiply(d, self.public_keys[index-1])
-        denominator2 = fast_multiply(d, self.encrypted_shares[index-1])
+            denominator1 = fast_multiply(d, self.public_keys[i])
+            denominator2 = fast_multiply(d, self.encrypted_shares[i])
 
-        temp_d = sha256(str(self.public_keys[index-1]).encode()).hexdigest() + str(",")
-        temp_d += sha256(str(self.encrypted_shares[index-1]).encode()).hexdigest() + str(",")
-        temp_d += sha256(str(nominator1-denominator1).encode()).hexdigest() + str(",")
-        temp_d += sha256(str(nominator2-denominator2).encode()).hexdigest()
+            #print("Verify party ", index, " : ", self.public_keys[index-1], self.encrypted_shares[index-1], nominator1-denominator1, nominator2-denominator2)
+            temp_d = sha256(str(self.public_keys[i]).encode()).hexdigest() + str(",")
+            temp_d += sha256(str(self.encrypted_shares[i]).encode()).hexdigest() + str(",")
+            temp_d += sha256(str(nominator1-denominator1).encode()).hexdigest() + str(",")
+            temp_d += sha256(str(nominator2-denominator2).encode()).hexdigest()
 
-        reconstructed_d = Integer(Zq(int(temp_d,16)))
+            reconstructed_d = Integer(Zq(int(sha256(str(temp_d).encode()).hexdigest(),16)))
 
-        return d == reconstructed_d
+            if d == reconstructed_d:
+                self.valid_decrypted_shares.append(dec_share)
+
+    """
+    def reconstruct_secret(self):
+        f = RP.lagrange_polynomial([(i+1, self.valid_decrypted_shares[i]) for i in range(len(self.valid_decrypted_shares))])
+        return f(x=0)
+    """
+
+    def lambda_func(self, i):
+        lambda_i = Zq(1)
+        for j in range(1, self.n+1):
+            if j != i:
+                lambda_i *= Zq(j)/(Zq(j)-Zq(i))
+        
+        return lambda_i
 
     def reconstruct_secret(self):
-        f = RP.lagrange_polynomial([self.decrypted_shares[i] for i in range(len(self.decrypted_shares))])
-        return f(x=0)
+        # From https://github.com/darkrenaissance/darkfi/blob/master/script/research/pvss/pvss.sage
+        reconstructed_secret = E(0)
+
+        for i in range(len(self.valid_decrypted_shares)//2-1):
+            reconstructed_secret += fast_multiply(Integer(self.lambda_func(i+1)), self.valid_decrypted_shares[i])
+        
+        return reconstructed_secret
+
 
 
 class Dealer:
     def __init__(self, public_keys, n):
-        self.pub_keys = public_keys
+        self.public_keys = public_keys
         self.n = n
         self.t = n//2-1 # assumes n is even!
 
     def broadcast_secret_and_proof(self):
         f = RP.random_element(degree=self.t)
+        global global_secret #! Only for testing purposes
+        global_secret = f(x=0)
         enc_shares = self.generate_encrypted_evals(f)
-        pi_share = self.pi_pdl(enc_shares)
+        pi_share = self.pi_pdl(enc_shares, f)
 
         return enc_shares, pi_share
 
@@ -218,9 +246,79 @@ class Dealer:
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
-        d = Integer(Zq(int(sha256(str(temp_d1)+str(temp_d2)).hexdigest(),16)))
+        d = Integer(Zq(int(sha256((str(temp_d1)+str(temp_d2)).encode()).hexdigest(),16)))
         z = r + d*f
 
         return d,z
 
+
+public_keys = [0 for _ in range(6)]
+parties = [0 for _ in range(6)]
+decrypted_shares_and_proofs = [0 for _ in range(6)]
+
+print("------------------------")
+print("Starting pi_s PVSS tests")
+print("------------------------")
+
+
+for i in range(1,7):
+    p = Party(i, 6)
+    public_keys[i-1] = p.publish_public_key()
+    parties[i-1] = p
+
+print("------------------------------------------------------")
+print("Party generation and public key publication successful")
+print("------------------------------------------------------")
+
+dealer = Dealer(public_keys, 6)
+(enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
+
+print("---------------------------------------------------------------------")
+print("Dealer generation and encrypted shares + proof publication successful")
+print("---------------------------------------------------------------------")
+
+for i in range(6):
+    p = parties[i]
+    p.receive_public_keys(public_keys)
+    p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
+
+    if p.verify_encrypted_shares():
+        p.generate_decrypted_share()
+        assert p.encrypted_shares[p.index-1] == fast_multiply(Integer(p.secret_key), p.dec_share)
+        p.nizk_proof_for_dleq()
+        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+        assert len(decrypted_shares_and_proofs[i]) == 2
+
+print("---------------------------------------------")
+print("Party encrypted share verification successful")
+print("---------------------------------------------")
     
+for i in range(6):
+    p = parties[i]
+    p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs) #! If a party fails the `verify_encrypted_share`, the index will be wrong
+    assert len(p.decrypted_shares_and_proof) == 6
+    assert len(p.decrypted_shares_and_proof[0]) == 2
+
+print("---------------------------------------------")
+print("Party decrypted share distribution successful")
+print("---------------------------------------------")
+
+for i in range(6):
+    p = parties[i]
+    p.verify_decrypted_shares()
+    assert len(p.valid_decrypted_shares) == 6
+
+print("---------------------------------------------")
+print("Party decrypted share verification successful")
+print("---------------------------------------------")
+
+for i in range(6):
+    p = parties[i]
+    reconstructed_secret = p.reconstruct_secret()
+    assert fast_multiply(global_secret, G) == reconstructed_secret
+
+print("--------------------------------------")
+print("Party secret reconstruction successful")
+print("--------------------------------------")
+
+print("All tests successful")
