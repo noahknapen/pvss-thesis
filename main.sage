@@ -106,7 +106,7 @@ class Party:
         self.dec_share = 0
         self.share_proof = [0,0]
         self.decrypted_shares_and_proof = [0 for _ in range(self.n)]
-        self.valid_decrypted_shares = []
+        self.valid_decrypted_shares = [0 for _ in range(self.n)]
     
     def publish_public_key(self):
         return self.public_key
@@ -115,11 +115,11 @@ class Party:
         self.public_keys = public_keys
     
     def receive_encrypted_shares_and_proof(self, encrypted_shares, dealer_proof):
-        self.encrypted_shares = encrypted_shares
+        self.encrypted_shares = encrypted_shares # Assume shares are received in order of party indices
         self.dealer_proof = dealer_proof
     
     def receive_decrypted_shares_and_proofs(self, dec_shares_and_proofs):
-        self.decrypted_shares_and_proof = dec_shares_and_proofs
+        self.decrypted_shares_and_proof = dec_shares_and_proofs # Assume shares are received in order of party indices
 
     def verify_encrypted_shares(self):    
         d = self.dealer_proof[0]
@@ -174,7 +174,6 @@ class Party:
             denominator1 = fast_multiply(d, self.public_keys[i])
             denominator2 = fast_multiply(d, self.encrypted_shares[i])
 
-            #print("Verify party ", index, " : ", self.public_keys[index-1], self.encrypted_shares[index-1], nominator1-denominator1, nominator2-denominator2)
             temp_d = sha256(str(self.public_keys[i]).encode()).hexdigest() + str(",")
             temp_d += sha256(str(self.encrypted_shares[i]).encode()).hexdigest() + str(",")
             temp_d += sha256(str(nominator1-denominator1).encode()).hexdigest() + str(",")
@@ -183,17 +182,17 @@ class Party:
             reconstructed_d = Integer(Zq(int(sha256(str(temp_d).encode()).hexdigest(),16)))
 
             if d == reconstructed_d:
-                self.valid_decrypted_shares.append(dec_share)
+                self.valid_decrypted_shares[i] = dec_share
 
-    """
+    """ #! This does not work since g^f is not the same polynomial as f
     def reconstruct_secret(self):
-        f = RP.lagrange_polynomial([(i+1, self.valid_decrypted_shares[i]) for i in range(len(self.valid_decrypted_shares))])
+        f = RP.lagrange_polynomial([(self.valid_decrypted_shares[i][0], self.valid_decrypted_shares[i][1]) for i in range(len(self.valid_decrypted_shares)//2)])
         return f(x=0)
-    """
 
+    """
     def lambda_func(self, i):
         lambda_i = Zq(1)
-        for j in range(1, self.n+1):
+        for j in range(1, self.n//2+1):
             if j != i:
                 lambda_i *= Zq(j)/(Zq(j)-Zq(i))
         
@@ -202,12 +201,16 @@ class Party:
     def reconstruct_secret(self):
         # From https://github.com/darkrenaissance/darkfi/blob/master/script/research/pvss/pvss.sage
         reconstructed_secret = E(0)
+        counter = 0
 
-        for i in range(len(self.valid_decrypted_shares)//2-1):
-            reconstructed_secret += fast_multiply(Integer(self.lambda_func(i+1)), self.valid_decrypted_shares[i])
+        for i in range(len(self.valid_decrypted_shares)):
+            if self.valid_decrypted_shares[i] != 0:
+                reconstructed_secret += fast_multiply(Integer(self.lambda_func(i+1)), self.valid_decrypted_shares[i])
+                counter += 1
+            if counter == self.n//2: # t+1 shares needed to reconstruct
+                break
         
         return reconstructed_secret
-
 
 
 class Dealer:
@@ -259,7 +262,6 @@ decrypted_shares_and_proofs = [0 for _ in range(6)]
 print("------------------------")
 print("Starting pi_s PVSS tests")
 print("------------------------")
-
 
 for i in range(1,7):
     p = Party(i, 6)
@@ -315,7 +317,8 @@ print("---------------------------------------------")
 for i in range(6):
     p = parties[i]
     reconstructed_secret = p.reconstruct_secret()
-    assert fast_multiply(global_secret, G) == reconstructed_secret
+    generator_secret = fast_multiply(global_secret, G)
+    assert  generator_secret[0] == reconstructed_secret[0]
 
 print("--------------------------------------")
 print("Party secret reconstruction successful")
