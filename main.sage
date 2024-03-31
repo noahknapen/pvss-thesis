@@ -1,4 +1,5 @@
 from hashlib import sha256
+from time import time
 #TODO: create measurements
 # Stage 2: See applications of PVSS in the literature and implement other PVSS schemes
 
@@ -249,74 +250,156 @@ class Dealer:
 
         return d,z
 
-n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
-public_keys = [0 for _ in range(n)]
-parties = [0 for _ in range(n)]
-decrypted_shares_and_proofs = [0 for _ in range(n)]
 
-print("------------------------")
-print("Starting pi_s PVSS tests")
-print("------------------------")
 
-for i in range(1,n+1):
-    p = Party(i, n)
-    public_keys[i-1] = p.publish_public_key()
-    parties[i-1] = p
 
-print("------------------------------------------------------")
-print("Party generation and public key publication successful")
-print("------------------------------------------------------")
+def benchmark_pi_s(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
 
-dealer = Dealer(public_keys, n)
-(enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
-
-print("---------------------------------------------------------------------")
-print("Dealer generation and encrypted shares + proof publication successful")
-print("---------------------------------------------------------------------")
-
-for i in range(n):
-    p = parties[i]
-    p.receive_public_keys(public_keys)
-    p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
-
-    if p.verify_encrypted_shares():
-        p.generate_decrypted_share()
-        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
-        p.nizk_proof_for_dleq()
-        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-        assert len(decrypted_shares_and_proofs[i]) == 2
-
-print("---------------------------------------------")
-print("Party encrypted share verification successful")
-print("---------------------------------------------")
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.publish_public_key()
+        parties[i-1] = p
     
-for i in range(n):
-    p = parties[i]
-    p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs) #! If a party fails the `verify_encrypted_share`, the index will be wrong
-    assert len(p.decrypted_shares_and_proof) == n
-    assert len(p.decrypted_shares_and_proof[0]) == 2
+    dealer = Dealer(public_keys, n)
 
-print("---------------------------------------------")
-print("Party decrypted share distribution successful")
-print("---------------------------------------------")
+    Tdealer_share = time()
+    (enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
+    Tdealer_share = time() - Tdealer_share
 
-for i in range(n):
-    p = parties[i]
-    p.verify_decrypted_shares()
-    assert len(p.valid_decrypted_shares) == n
+    total_Tcomm = 0
+    total_Tparty_verify = 0
+    total_Tparty_share = 0
 
-print("---------------------------------------------")
-print("Party decrypted share verification successful")
-print("---------------------------------------------")
+    for i in range(n):
+        p = parties[i]
+        temp_Tcomm = time()
+        p.receive_public_keys(public_keys)
+        p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
+        total_Tcomm += time() - temp_Tcomm
 
-for i in range(n):
-    p = parties[i]
-    reconstructed_secret = p.reconstruct_secret()
-    generator_secret = fast_multiply(global_secret, G)
-    assert  generator_secret[0] == reconstructed_secret[0]
+        temp_Tparty_verify = time()
+        party_verified = p.verify_encrypted_shares()
+        total_Tparty_verify += time() - temp_Tparty_verify
 
-print("--------------------------------------")
-print("Party secret reconstruction successful")
-print("--------------------------------------")
+        if party_verified:
+            temp_Tparty_share = time()
+            p.generate_decrypted_share()
+            p.nizk_proof_for_dleq()
+            total_Tparty_share += time() - temp_Tparty_share
+            decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
 
-print("All tests successful")
+    avg_Tparty_verify = total_Tparty_verify/n
+    avg_Tparty_share = total_Tparty_share/n
+
+    for i in range(n):
+        p = parties[i]
+        temp_Tcomm = time()
+        p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        total_Tcomm += time() - temp_Tcomm
+
+    avg_Tcomm = total_Tcomm/n
+    total_Tparty_verify_decrypted = 0
+    
+    for i in range(n):
+        p = parties[i]
+        temp_Tparty_verify_decrypted = time()
+        p.verify_decrypted_shares()
+        total_Tparty_verify_decrypted += time() - temp_Tparty_verify_decrypted
+    
+    avg_Tparty_verify_decrypted = total_Tparty_verify_decrypted/n
+
+    total_Tparty_reconstruct = 0
+
+    for i in range(n):
+        p = parties[i]
+        temp_Tparty_reconstruct = time()
+        p.reconstruct_secret()
+        total_Tparty_reconstruct += time() - temp_Tparty_reconstruct
+    
+    avg_Tparty_reconstruct = total_Tparty_reconstruct/n
+
+    print("average communication time: ", avg_Tcomm)
+    print("average encrypted shares verification time:", avg_Tparty_verify)
+    print("average decrypted shares generation time:", avg_Tparty_share)
+    print("average decrypted shares verification time:", avg_Tparty_verify_decrypted)
+    print("average secret reconstruction time:", avg_Tparty_reconstruct)
+    
+
+def test_pi_s(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
+
+    print("------------------------")
+    print("Starting pi_s PVSS tests")
+    print("------------------------")
+
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.publish_public_key()
+        parties[i-1] = p
+
+    print("------------------------------------------------------")
+    print("Party generation and public key publication successful")
+    print("------------------------------------------------------")
+
+    dealer = Dealer(public_keys, n)
+    (enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
+
+    print("---------------------------------------------------------------------")
+    print("Dealer generation and encrypted shares + proof publication successful")
+    print("---------------------------------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        p.receive_public_keys(public_keys)
+        p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
+
+        if p.verify_encrypted_shares():
+            p.generate_decrypted_share()
+            assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
+            p.nizk_proof_for_dleq()
+            decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+            assert len(decrypted_shares_and_proofs[i]) == 2
+
+    print("---------------------------------------------")
+    print("Party encrypted share verification successful")
+    print("---------------------------------------------")
+        
+    for i in range(n):
+        p = parties[i]
+        p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        assert len(p.decrypted_shares_and_proof) == n
+        assert len(p.decrypted_shares_and_proof[0]) == 2
+
+    print("---------------------------------------------")
+    print("Party decrypted share distribution successful")
+    print("---------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        p.verify_decrypted_shares()
+        assert len(p.valid_decrypted_shares) == n
+
+    print("---------------------------------------------")
+    print("Party decrypted share verification successful")
+    print("---------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        reconstructed_secret = p.reconstruct_secret()
+        generator_secret = fast_multiply(global_secret, G)
+        assert  generator_secret[0] == reconstructed_secret[0]
+
+    print("--------------------------------------")
+    print("Party secret reconstruction successful")
+    print("--------------------------------------")
+
+    print("All tests successful")
+
+
+n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+benchmark_pi_s(n)
