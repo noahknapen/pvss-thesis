@@ -152,7 +152,6 @@ class Party:
         c1 = fast_multiply(r, G)
         c2 = fast_multiply(r, self.dec_share)
 
-        #print("Proof party ", self.index, " : ", self.public_key, self.encrypted_shares[self.index-1], c1,c2)
         d = sha256(str(self.public_key).encode()).hexdigest() + str(",")
         d += sha256(str(self.encrypted_shares[self.index-1]).encode()).hexdigest() + str(",")
         d += sha256(str(c1).encode()).hexdigest() + str(",")
@@ -186,12 +185,6 @@ class Party:
             if d == reconstructed_d:
                 self.valid_decrypted_shares[i] = dec_share
 
-    """ #! This does not work since g^f is not the same polynomial as f
-    def reconstruct_secret(self):
-        f = RP.lagrange_polynomial([(self.valid_decrypted_shares[i][0], self.valid_decrypted_shares[i][1]) for i in range(len(self.valid_decrypted_shares)//2)])
-        return f(x=0)
-
-    """
     def lambda_func(self, i):
         lambda_i = Zq(1)
         for j in range(1, self.n//2+1):
@@ -256,7 +249,7 @@ class Dealer:
 
         return d,z
 
-n = 9 #! Uneven values or values under 6 do not work
+n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 public_keys = [0 for _ in range(n)]
 parties = [0 for _ in range(n)]
 decrypted_shares_and_proofs = [0 for _ in range(n)]
