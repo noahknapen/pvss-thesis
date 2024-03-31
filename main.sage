@@ -1,4 +1,6 @@
 from hashlib import sha256
+#TODO: cleaning code, make number of parties variable and not hardcoded, create measurements
+# Stage 2: See applications of PVSS in the literature and implement other PVSS schemes
 
 p = 2^255 - 19
 q = 2^252 + 27742317777372353535851937790883648493
@@ -127,10 +129,10 @@ class Party:
         temp_d1, temp_d2 = "", ""
 
         for i in range(self.n):
-            temp_d1 = sha256(str(self.encrypted_shares[i]).encode()).hexdigest()+str(",")
+            temp_d1 = str(self.encrypted_shares[i])+str(",")
             numerator = fast_multiply(z(x=i+1), self.public_keys[i])
             denominator = fast_multiply(d, self.encrypted_shares[i])
-            temp_d2 = sha256(str(numerator - denominator).encode()).hexdigest()+str(",")
+            temp_d2 = str(numerator - denominator)+str(",")
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
@@ -203,7 +205,7 @@ class Party:
         reconstructed_secret = E(0)
         counter = 0
 
-        for i in range(len(self.valid_decrypted_shares)):
+        for i in range(len(self.valid_decrypted_shares)): # w.l.o.g. we take the first t+1 valid shares, but randomly chosen t+1 shares can also be chosen
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(Integer(self.lambda_func(i+1)), self.valid_decrypted_shares[i])
                 counter += 1
@@ -217,7 +219,7 @@ class Dealer:
     def __init__(self, public_keys, n):
         self.public_keys = public_keys
         self.n = n
-        self.t = n//2-1 # assumes n is even!
+        self.t = n//2-1 # Honest majority setting
 
     def broadcast_secret_and_proof(self):
         f = RP.random_element(degree=self.t)
@@ -244,27 +246,27 @@ class Dealer:
         temp_d1, temp_d2 = "", ""
 
         for i in range(self.n):
-            temp_d1 = sha256(str(enc_shares[i]).encode()).hexdigest()+str(",")
-            temp_d2 = sha256(str(enc_r_evals[i]).encode()).hexdigest()+str(",")
+            temp_d1 = str(enc_shares[i])+str(",")
+            temp_d2 = str(enc_r_evals[i])+str(",")
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
-        d = Integer(Zq(int(sha256((str(temp_d1)+str(temp_d2)).encode()).hexdigest(),16)))
+        d = Integer(Zq(int(sha256((temp_d1+temp_d2).encode()).hexdigest(),16)))
         z = r + d*f
 
         return d,z
 
-
-public_keys = [0 for _ in range(6)]
-parties = [0 for _ in range(6)]
-decrypted_shares_and_proofs = [0 for _ in range(6)]
+n = 9 #! Uneven values or values under 6 do not work
+public_keys = [0 for _ in range(n)]
+parties = [0 for _ in range(n)]
+decrypted_shares_and_proofs = [0 for _ in range(n)]
 
 print("------------------------")
 print("Starting pi_s PVSS tests")
 print("------------------------")
 
-for i in range(1,7):
-    p = Party(i, 6)
+for i in range(1,n+1):
+    p = Party(i, n)
     public_keys[i-1] = p.publish_public_key()
     parties[i-1] = p
 
@@ -272,14 +274,14 @@ print("------------------------------------------------------")
 print("Party generation and public key publication successful")
 print("------------------------------------------------------")
 
-dealer = Dealer(public_keys, 6)
+dealer = Dealer(public_keys, n)
 (enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
 
 print("---------------------------------------------------------------------")
 print("Dealer generation and encrypted shares + proof publication successful")
 print("---------------------------------------------------------------------")
 
-for i in range(6):
+for i in range(n):
     p = parties[i]
     p.receive_public_keys(public_keys)
     p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
@@ -295,26 +297,26 @@ print("---------------------------------------------")
 print("Party encrypted share verification successful")
 print("---------------------------------------------")
     
-for i in range(6):
+for i in range(n):
     p = parties[i]
     p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs) #! If a party fails the `verify_encrypted_share`, the index will be wrong
-    assert len(p.decrypted_shares_and_proof) == 6
+    assert len(p.decrypted_shares_and_proof) == n
     assert len(p.decrypted_shares_and_proof[0]) == 2
 
 print("---------------------------------------------")
 print("Party decrypted share distribution successful")
 print("---------------------------------------------")
 
-for i in range(6):
+for i in range(n):
     p = parties[i]
     p.verify_decrypted_shares()
-    assert len(p.valid_decrypted_shares) == 6
+    assert len(p.valid_decrypted_shares) == n
 
 print("---------------------------------------------")
 print("Party decrypted share verification successful")
 print("---------------------------------------------")
 
-for i in range(6):
+for i in range(n):
     p = parties[i]
     reconstructed_secret = p.reconstruct_secret()
     generator_secret = fast_multiply(global_secret, G)
