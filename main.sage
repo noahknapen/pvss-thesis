@@ -1,5 +1,5 @@
 from hashlib import sha256
-#TODO: cleaning code, make number of parties variable and not hardcoded, create measurements
+#TODO: create measurements
 # Stage 2: See applications of PVSS in the literature and implement other PVSS schemes
 
 p = 2^255 - 19
@@ -88,12 +88,12 @@ def recover_y(P,Q,R):
     X  = V1 * XQ
     Z  = V1 * ZQ
     
-    return E(X,Y,Z)
+    return E(X,Y,Z) #! The bug occurs here since X, Y, and Z are 0 in the bug-cases
 
 def fast_multiply(k,P): # use montgomery ladder and y-recovery
     PM = [P[0],P[2]] # X-Z coordinates
     x0,x1 = Montgomery_ladder(Integer(k),PM)
-    return E(recover_y(P,x0,x1))
+    return recover_y(P,x0,x1)
 
 
 class Party:
@@ -101,7 +101,7 @@ class Party:
         self.n = n
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
-        self.public_key = fast_multiply(Integer(self.secret_key), G)
+        self.public_key = fast_multiply(self.secret_key, G)
         self.public_keys = [0 for _ in range(self.n)]
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.dealer_proof = [0,0]
@@ -200,7 +200,7 @@ class Party:
 
         for i in range(len(self.valid_decrypted_shares)): # w.l.o.g. we take the first t+1 valid shares, but randomly chosen t+1 shares can also be chosen
             if self.valid_decrypted_shares[i] != 0:
-                reconstructed_secret += fast_multiply(Integer(self.lambda_func(i+1)), self.valid_decrypted_shares[i])
+                reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
                 counter += 1
             if counter == self.n//2: # t+1 shares needed to reconstruct
                 break
@@ -228,7 +228,7 @@ class Dealer:
         enc_evals = [0 for _ in range(self.n)]
         
         for i in range(self.n):
-            enc_evals[i] = fast_multiply(Integer(evals[i]), self.public_keys[i])
+            enc_evals[i] = fast_multiply(evals[i], self.public_keys[i])
 
         return enc_evals
     
@@ -249,7 +249,7 @@ class Dealer:
 
         return d,z
 
-n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 public_keys = [0 for _ in range(n)]
 parties = [0 for _ in range(n)]
 decrypted_shares_and_proofs = [0 for _ in range(n)]
@@ -281,7 +281,7 @@ for i in range(n):
 
     if p.verify_encrypted_shares():
         p.generate_decrypted_share()
-        assert p.encrypted_shares[p.index-1] == fast_multiply(Integer(p.secret_key), p.dec_share)
+        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
         p.nizk_proof_for_dleq()
         decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
         assert len(decrypted_shares_and_proofs[i]) == 2
