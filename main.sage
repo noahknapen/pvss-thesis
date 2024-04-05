@@ -251,17 +251,21 @@ class Dealer:
         return d,z
 
 
-
-
 def benchmark_pi_s(n):
     public_keys = [0 for _ in range(n)]
     parties = [0 for _ in range(n)]
     decrypted_shares_and_proofs = [0 for _ in range(n)]
 
+    total_Tparty_init = 0
+
     for i in range(1,n+1):
+        temp_Tparty_init = time()
         p = Party(i, n)
         public_keys[i-1] = p.publish_public_key()
         parties[i-1] = p
+        total_Tparty_init += time() - temp_Tparty_init
+
+    avg_Tparty_init = total_Tparty_init/n
     
     dealer = Dealer(public_keys, n)
 
@@ -321,11 +325,13 @@ def benchmark_pi_s(n):
     
     avg_Tparty_reconstruct = total_Tparty_reconstruct/n
 
-    print("average communication time: ", avg_Tcomm)
-    print("average encrypted shares verification time:", avg_Tparty_verify)
-    print("average decrypted shares generation time:", avg_Tparty_share)
-    print("average decrypted shares verification time:", avg_Tparty_verify_decrypted)
-    print("average secret reconstruction time:", avg_Tparty_reconstruct)
+    print("average communication time:                  ", avg_Tcomm, " seconds")
+    print("average party initialization time:           ", avg_Tparty_init, " seconds")
+    print("share construction time:                     ", Tdealer_share, " seconds")
+    print("average encrypted shares verification time:  ", avg_Tparty_verify, " seconds")
+    print("average decrypted shares generation time:    ", avg_Tparty_share, " seconds")
+    print("average decrypted shares verification time:  ", avg_Tparty_verify_decrypted, "seconds")
+    print("average secret reconstruction time:          ", avg_Tparty_reconstruct, " seconds")
     
 
 def test_pi_s(n):
