@@ -114,15 +114,15 @@ class Party:
     def publish_public_key(self):
         return self.public_key
 
-    def receive_public_keys(self, public_keys):
+    def store_public_keys(self, public_keys):
         self.public_keys = public_keys
     
-    def receive_encrypted_shares_and_proof(self, encrypted_shares, dealer_proof):
-        self.encrypted_shares = encrypted_shares # Assume shares are received in order of party indices
+    def store_encrypted_shares_and_proof(self, encrypted_shares, dealer_proof):
+        self.encrypted_shares = encrypted_shares # Assume shares are stored in order of party indices
         self.dealer_proof = dealer_proof
     
-    def receive_decrypted_shares_and_proofs(self, dec_shares_and_proofs):
-        self.decrypted_shares_and_proof = dec_shares_and_proofs # Assume shares are received in order of party indices
+    def store_decrypted_shares_and_proofs(self, dec_shares_and_proofs):
+        self.decrypted_shares_and_proof = dec_shares_and_proofs # Assume shares are stored in order of party indices
 
     def verify_encrypted_shares(self):    
         d = self.dealer_proof[0]
@@ -208,6 +208,20 @@ class Party:
         
         return reconstructed_secret
 
+    def verification_stage(self, public_keys, encrypted_shares, dealer_proof):
+        self.store_public_keys(public_keys)
+        self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
+
+        if (self.verify_encrypted_shares()):
+            self.generate_decrypted_share()
+            self.nizk_proof_for_dleq()
+            return self.broadcast_decrypted_share_and_proof()
+    
+    def reconstruction_stage(self, decrypted_shares_and_proofs):
+        self.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        self.verify_decrypted_shares()
+        return self.reconstruct_secret()
+
 
 class Dealer:
     def __init__(self, public_keys, n):
@@ -215,14 +229,16 @@ class Dealer:
         self.n = n
         self.t = n//2-1 # Honest majority setting
 
-    def broadcast_secret_and_proof(self):
+    def share_stage(self):
         f = RP.random_element(degree=self.t)
         global global_secret #! Only for testing purposes
         global_secret = f(x=0)
         enc_shares = self.generate_encrypted_evals(f)
         pi_share = self.pi_pdl(enc_shares, f)
-
-        return enc_shares, pi_share
+        return self.broadcast_share_and_proof(enc_shares, pi_share)
+    
+    def broadcast_share_and_proof(self, encrypted_shares, proof):
+        return encrypted_shares, proof
 
     def generate_encrypted_evals(self, pol):
         evals = [pol(x=i) for i in range(1, self.n+1)]
@@ -270,7 +286,7 @@ def benchmark_pi_s(n):
     dealer = Dealer(public_keys, n)
 
     Tdealer_share = time()
-    (enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
+    (enc_shares, pi_share) = dealer.share_stage()
     Tdealer_share = time() - Tdealer_share
 
     total_Tcomm = 0
@@ -280,8 +296,8 @@ def benchmark_pi_s(n):
     for i in range(n):
         p = parties[i]
         temp_Tcomm = time()
-        p.receive_public_keys(public_keys)
-        p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
+        p.store_public_keys(public_keys)
+        p.store_encrypted_shares_and_proof(enc_shares, pi_share)
         total_Tcomm += time() - temp_Tcomm
 
         temp_Tparty_verify = time()
@@ -301,7 +317,7 @@ def benchmark_pi_s(n):
     for i in range(n):
         p = parties[i]
         temp_Tcomm = time()
-        p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
         total_Tcomm += time() - temp_Tcomm
 
     avg_Tcomm = total_Tcomm/n
@@ -353,7 +369,7 @@ def test_pi_s(n):
     print("------------------------------------------------------")
 
     dealer = Dealer(public_keys, n)
-    (enc_shares, pi_share) = dealer.broadcast_secret_and_proof()
+    (enc_shares, pi_share) = dealer.share_stage()
 
     print("---------------------------------------------------------------------")
     print("Dealer generation and encrypted shares + proof publication successful")
@@ -361,8 +377,8 @@ def test_pi_s(n):
 
     for i in range(n):
         p = parties[i]
-        p.receive_public_keys(public_keys)
-        p.receive_encrypted_shares_and_proof(enc_shares, pi_share)
+        p.store_public_keys(public_keys)
+        p.store_encrypted_shares_and_proof(enc_shares, pi_share)
 
         if p.verify_encrypted_shares():
             p.generate_decrypted_share()
@@ -377,7 +393,7 @@ def test_pi_s(n):
         
     for i in range(n):
         p = parties[i]
-        p.receive_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
         assert len(p.decrypted_shares_and_proof) == n
         assert len(p.decrypted_shares_and_proof[0]) == 2
 
