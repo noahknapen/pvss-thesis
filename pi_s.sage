@@ -290,44 +290,64 @@ def benchmark_pi_s(n):
 
     avg_Tparty_init = total_Tparty_init/n
     
+    Tdealer_init = time()
     dealer = Dealer(public_keys, n)
+    Tdealer_init = time() - Tdealer_init
 
-    Tdealer_share = time()
-    (enc_shares, pi_share) = dealer.share_stage()
-    Tdealer_share = time() - Tdealer_share
+    #(enc_shares, pi_share) = dealer.share_stage()
+    Tdealer_pol_generation = time()
+    dealer.generate_polynomial()
+    Tdealer_pol_generation = time() - Tdealer_pol_generation
 
-    total_Tcomm = 0
+    Tdealer_encrypt_shares = time()
+    dealer.encrypted_shares = dealer.generate_encrypted_evals(dealer.f)
+    Tdealer_encrypt_shares = time() - Tdealer_encrypt_shares
+
+    Tdealer_proof = time()
+    dealer.pi_pdl()
+    Tdealer_proof = time() - Tdealer_proof
+
+    Tdealer_comm = time()
+    (enc_shares, pi_share) = dealer.broadcast_share_and_proof()
+    Tdealer_comm = time() - Tdealer_comm
+
+
+    total_Tparty_comm = 0
     total_Tparty_verify = 0
-    total_Tparty_share = 0
+    total_Tparty_decrypt_share = 0
+    total_Tparty_proof = 0
 
     for i in range(n):
         p = parties[i]
-        temp_Tcomm = time()
+        temp_Tparty_comm = time()
         p.store_public_keys(public_keys)
         p.store_encrypted_shares_and_proof(enc_shares, pi_share)
-        total_Tcomm += time() - temp_Tcomm
+        total_Tparty_comm += time() - temp_Tparty_comm
 
         temp_Tparty_verify = time()
         party_verified = p.verify_encrypted_shares()
         total_Tparty_verify += time() - temp_Tparty_verify
 
         if party_verified:
-            temp_Tparty_share = time()
+            temp_Tparty_decrypt_share = time()
             p.generate_decrypted_share()
+            total_Tparty_decrypt_share += time() - temp_Tparty_decrypt_share
+            temp_Tparty_proof = time()
             p.nizk_proof_for_dleq()
-            total_Tparty_share += time() - temp_Tparty_share
+            total_Tparty_proof = time() - temp_Tparty_proof
             decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
 
     avg_Tparty_verify = total_Tparty_verify/n
-    avg_Tparty_share = total_Tparty_share/n
+    avg_Tparty_decrypt_share = total_Tparty_decrypt_share/n
+    avg_Tparty_proof = total_Tparty_proof/n
 
     for i in range(n):
         p = parties[i]
-        temp_Tcomm = time()
+        temp_Tparty_comm = time()
         p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
-        total_Tcomm += time() - temp_Tcomm
+        total_Tparty_comm += time() - temp_Tparty_comm
 
-    avg_Tcomm = total_Tcomm/n
+    avg_Tparty_comm = total_Tparty_comm/n
     total_Tparty_verify_decrypted = 0
     
     for i in range(n):
@@ -348,13 +368,34 @@ def benchmark_pi_s(n):
     
     avg_Tparty_reconstruct = total_Tparty_reconstruct/n
 
-    print("average communication time:                  ", avg_Tcomm, " seconds")
-    print("average party initialization time:           ", avg_Tparty_init, " seconds")
-    print("share construction time:                     ", Tdealer_share, " seconds")
-    print("average encrypted shares verification time:  ", avg_Tparty_verify, " seconds")
-    print("average decrypted shares generation time:    ", avg_Tparty_share, " seconds")
-    print("average decrypted shares verification time:  ", avg_Tparty_verify_decrypted, "seconds")
-    print("average secret reconstruction time:          ", avg_Tparty_reconstruct, " seconds")
+    print("------------------------------dealer------------------------------")
+    print("initialization time:                             ", Tdealer_init, " seconds")
+    print("communication time:                              ", Tdealer_comm, " seconds")
+    print("polynomial generation time:                      ", Tdealer_pol_generation, " seconds")
+    print("shares encryption time:                          ", Tdealer_encrypt_shares, " seconds")
+    print("shares proof generation time:                    ", Tdealer_proof, " seconds")
+    print("------------------------------party-------------------------------")
+    print("average initialization time:                     ", avg_Tparty_init, " seconds")
+    print("average communication time:                      ", avg_Tparty_comm, " seconds")
+    print("average encrypted shares verification time:      ", avg_Tparty_verify, " seconds")
+    print("average decrypted shares generation time:        ", avg_Tparty_decrypt_share, " seconds")
+    print("average decrypted share proof generation time:   ", avg_Tparty_proof, " seconds")
+    print("average decrypted shares verification time:      ", avg_Tparty_verify_decrypted, "seconds")
+    print("average secret reconstruction time:              ", avg_Tparty_reconstruct, " seconds")
+    print("--------------------------communication---------------------------")
+    print("dealer + average party communication time:       ", Tdealer_comm+avg_Tparty_comm, "seconds")
+    print("dealer + total time for ", n, " parties:         ", Tdealer_comm+total_Tparty_comm, " seconds")
+    print("--------------------------sharing stage---------------------------")
+    print("dealer side time:                                ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm, " seconds")
+    print("average party side time:                         ", avg_Tparty_comm, " seconds")
+    print("total average time:                              ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm+avg_Tparty_comm, " seconds")
+    print("total time for ", n, " parties:                  ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm+total_Tparty_comm, " seconds")
+    print("------------------------verification stage------------------------")
+    print("total average time:                              ", avg_Tparty_verify, " seconds")
+    print("total time for ", n, " parties:                  ", total_Tparty_verify, " seconds")
+    print("-----------------------reconstruction stage-----------------------")
+    print("total average time:                              ", avg_Tparty_decrypt_share+avg_Tparty_proof+avg_Tparty_verify_decrypted+avg_Tparty_reconstruct, " seconds")
+    print("total time for ", n, " parties:                  ", total_Tparty_decrypt_share+total_Tparty_proof+total_Tparty_verify_decrypted+total_Tparty_reconstruct, " seconds")
     
 
 def test_pi_s(n):
@@ -434,5 +475,5 @@ def test_pi_s(n):
 
 
 n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
-#benchmark_pi_s(n)
-test_pi_s(n)
+benchmark_pi_s(n)
+#test_pi_s(n)
