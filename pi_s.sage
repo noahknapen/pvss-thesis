@@ -130,10 +130,10 @@ class Party:
         temp_d1, temp_d2 = "", ""
 
         for i in range(self.n):
-            temp_d1 = str(self.encrypted_shares[i])+str(",")
+            temp_d1 = temp_d1 + str(self.encrypted_shares[i])+str(",")
             numerator = fast_multiply(z(x=i+1), self.public_keys[i])
             denominator = fast_multiply(d, self.encrypted_shares[i])
-            temp_d2 = str(numerator - denominator)+str(",")
+            temp_d2 = temp_d2 + str(numerator - denominator)+str(",")
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
@@ -263,8 +263,8 @@ class Dealer:
         temp_d1, temp_d2 = "", ""
 
         for i in range(self.n):
-            temp_d1 = str(self.encrypted_shares[i])+str(",")
-            temp_d2 = str(enc_r_evals[i])+str(",")
+            temp_d1 = temp_d1 + str(self.encrypted_shares[i])+str(",") #! This is not appended so only takes the last result!!!!
+            temp_d2 = temp_d2 + str(enc_r_evals[i])+str(",")
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
