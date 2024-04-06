@@ -153,10 +153,10 @@ class Party:
         c1 = fast_multiply(r, G)
         c2 = fast_multiply(r, self.dec_share)
 
-        d = sha256(str(self.public_key).encode()).hexdigest() + str(",")
-        d += sha256(str(self.encrypted_shares[self.index-1]).encode()).hexdigest() + str(",")
-        d += sha256(str(c1).encode()).hexdigest() + str(",")
-        d += sha256(str(c2).encode()).hexdigest()
+        d = str(self.public_key) + str(",")
+        d += str(self.encrypted_shares[self.index-1]) + str(",")
+        d += str(c1) + str(",")
+        d += str(c2)
 
         d = Integer(Zq(int(sha256(str(d).encode()).hexdigest(),16)))
         z = r + d*self.secret_key
@@ -176,10 +176,10 @@ class Party:
             denominator1 = fast_multiply(d, self.public_keys[i])
             denominator2 = fast_multiply(d, self.encrypted_shares[i])
 
-            temp_d = sha256(str(self.public_keys[i]).encode()).hexdigest() + str(",")
-            temp_d += sha256(str(self.encrypted_shares[i]).encode()).hexdigest() + str(",")
-            temp_d += sha256(str(nominator1-denominator1).encode()).hexdigest() + str(",")
-            temp_d += sha256(str(nominator2-denominator2).encode()).hexdigest()
+            temp_d = str(self.public_keys[i]) + str(",")
+            temp_d += str(self.encrypted_shares[i]) + str(",")
+            temp_d += str(nominator1-denominator1) + str(",")
+            temp_d += str(nominator2-denominator2)
 
             reconstructed_d = Integer(Zq(int(sha256(str(temp_d).encode()).hexdigest(),16)))
 
