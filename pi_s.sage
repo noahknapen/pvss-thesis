@@ -228,17 +228,24 @@ class Dealer:
         self.public_keys = public_keys
         self.n = n
         self.t = n//2-1 # Honest majority setting
+        self.f = 0
+        self.encrypted_shares = [0 for _ in range(self.n)]
+        self.proof = [0,0]
 
     def share_stage(self):
+        self.generate_polynomial()
+        self.encrypted_shares = self.generate_encrypted_evals(self.f)
+        self.pi_pdl()
+        return self.broadcast_share_and_proof()
+    
+    def broadcast_share_and_proof(self):
+        return self.encrypted_shares, self.proof
+    
+    def generate_polynomial(self):
         f = RP.random_element(degree=self.t)
         global global_secret #! Only for testing purposes
         global_secret = f(x=0)
-        enc_shares = self.generate_encrypted_evals(f)
-        pi_share = self.pi_pdl(enc_shares, f)
-        return self.broadcast_share_and_proof(enc_shares, pi_share)
-    
-    def broadcast_share_and_proof(self, encrypted_shares, proof):
-        return encrypted_shares, proof
+        self.f = f
 
     def generate_encrypted_evals(self, pol):
         evals = [pol(x=i) for i in range(1, self.n+1)]
@@ -249,22 +256,22 @@ class Dealer:
 
         return enc_evals
     
-    def pi_pdl(self, enc_shares, f):
+    def pi_pdl(self):
         r = RP.random_element(degree=self.t)
         enc_r_evals = self.generate_encrypted_evals(r)
 
         temp_d1, temp_d2 = "", ""
 
         for i in range(self.n):
-            temp_d1 = str(enc_shares[i])+str(",")
+            temp_d1 = str(self.encrypted_shares[i])+str(",")
             temp_d2 = str(enc_r_evals[i])+str(",")
         
         temp_d1 = temp_d1[:-1]
         temp_d2 = temp_d2[:-1]
         d = Integer(Zq(int(sha256((temp_d1+temp_d2).encode()).hexdigest(),16)))
-        z = r + d*f
+        z = r + d*self.f
 
-        return d,z
+        self.proof = [d,z]
 
 
 def benchmark_pi_s(n):
@@ -369,7 +376,10 @@ def test_pi_s(n):
     print("------------------------------------------------------")
 
     dealer = Dealer(public_keys, n)
-    (enc_shares, pi_share) = dealer.share_stage()
+    dealer.generate_polynomial()
+    dealer.encrypted_shares = dealer.generate_encrypted_evals(dealer.f)
+    dealer.pi_pdl()
+    (enc_shares, pi_share) = dealer.broadcast_share_and_proof()
 
     print("---------------------------------------------------------------------")
     print("Dealer generation and encrypted shares + proof publication successful")
@@ -424,4 +434,5 @@ def test_pi_s(n):
 
 
 n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
-benchmark_pi_s(n)
+#benchmark_pi_s(n)
+test_pi_s(n)
