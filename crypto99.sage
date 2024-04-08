@@ -107,7 +107,7 @@ class Party:
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, G)
         self.public_keys = [0 for _ in range(self.n)]
-        self.commitments = [0 for _ in range(self.n)]
+        self.commitments = [0 for _ in range(self.t)]
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.dealer_proof = [0,0]
         self.decrypted_share = 0
@@ -131,7 +131,7 @@ class Party:
         self.encrypted_shares = encrypted_shares # Assume shares are stored in order of party indices
         self.dealer_proof = dealer_proof
 
-    def store_decrypted_shares_and_proof(self, decrypted_shares_and_proof):
+    def store_decrypted_shares_and_proofs(self, decrypted_shares_and_proof):
         self.decrypted_shares_and_proof = decrypted_shares_and_proof
     
     def verify_encrypted_shares(self):
@@ -145,7 +145,7 @@ class Party:
         for i in range(self.n):
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
             for j in range(self.t):
-                reconstructed_gen_evals[i] += fast_multiply(j, self.commitments[i])
+                reconstructed_gen_evals[i] += fast_multiply(j, fast_multiply(i, self.commitments[j]))
                 reconstructed_gen_eval_str += str(reconstructed_gen_evals[i]) + str(",")
         
         enc_eval_str = enc_eval_str[:-1]
@@ -229,7 +229,7 @@ class Dealer:
         self.public_keys = public_keys
         self.n = n
         self.t = n//2-1 # Honest majority setting
-        self.commitments = [0 for _ in range(self.n)]
+        self.commitments = [0 for _ in range(self.t)]
         self.f = 0
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.proof = [0,0]
@@ -241,14 +241,14 @@ class Dealer:
         return self.encrypted_shares, self.proof
 
     def generate_polynomial(self):
-        f = RP.random_element(degree=self.t)
+        f = RP.random_element(degree=self.t-1)
         global global_secret #! Only for testing purposes
         global_secret = f(x=0)
         self.f = f
     
     def generate_commitments(self):
         coefs = self.f.coefficients(sparse=False)
-        for i in range(len(coefs)):
+        for i in range(self.t):
             self.commitments[i] = fast_multiply(coefs[i], G)
 
     def generate_encrypted_evals(self):
@@ -287,4 +287,84 @@ class Dealer:
         self.proof = [c, r_list]
 
 
+def test_crypto99(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
+
+    print("------------------------")
+    print("Starting crypto99 PVSS tests")
+    print("------------------------")
+
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.broadcast_public_key()
+        parties[i-1] = p
+
+    print("------------------------------------------------------")
+    print("Party generation and public key publication successful")
+    print("------------------------------------------------------")
+
+    dealer = Dealer(public_keys, n)
+    dealer.generate_polynomial()
+    dealer.generate_commitments()
+    commitments = dealer.broadcast_commitments()
+    dealer.generate_encrypted_evals()
+    dealer.dleq_pol()
+    (enc_shares, pi_share) = dealer.broadcast_share_and_proof()
+
+    print("---------------------------------------------------------------------")
+    print("Dealer generation and encrypted shares + proof publication successful")
+    print("---------------------------------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        p.store_public_keys(public_keys)
+        p.store_commitments(commitments)
+        p.store_encrypted_shares_and_proof(enc_shares, pi_share)
+
+        if p.verify_encrypted_shares(): #! Verification does not work
+            p.generate_decrypted_share()
+            assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
+            p.dleq_share()
+            decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+            assert len(decrypted_shares_and_proofs[i]) == 2
+
+    print("---------------------------------------------")
+    print("Party encrypted share verification successful")
+    print("---------------------------------------------")
         
+    for i in range(n):
+        p = parties[i]
+        p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        assert len(p.decrypted_shares_and_proof) == n
+        assert len(p.decrypted_shares_and_proof[0]) == 2
+
+    print("---------------------------------------------")
+    print("Party decrypted share distribution successful")
+    print("---------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        p.verify_decrypted_shares()
+        assert len(p.valid_decrypted_shares) == n
+
+    print("---------------------------------------------")
+    print("Party decrypted share verification successful")
+    print("---------------------------------------------")
+
+    for i in range(n):
+        p = parties[i]
+        reconstructed_secret = p.reconstruct_secret()
+        generator_secret = fast_multiply(global_secret, G)
+        assert  generator_secret[0] == reconstructed_secret[0]
+
+    print("--------------------------------------")
+    print("Party secret reconstruction successful")
+    print("--------------------------------------")
+
+    print("All tests successful")
+
+
+n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+test_crypto99(n) 
