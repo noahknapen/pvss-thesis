@@ -323,12 +323,12 @@ def test_crypto99(n):
         p.store_commitments(commitments)
         p.store_encrypted_shares_and_proof(enc_shares, pi_share)
 
-        if p.verify_encrypted_shares(): #! Verification does not work
-            p.generate_decrypted_share()
-            assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
-            p.dleq_share()
-            decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-            assert len(decrypted_shares_and_proofs[i]) == 2
+        assert p.verify_encrypted_shares() #! Verification does not work
+        p.generate_decrypted_share()
+        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
+        p.dleq_share()
+        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+        assert len(decrypted_shares_and_proofs[i]) == 2
 
     print("---------------------------------------------")
     print("Party encrypted share verification successful")

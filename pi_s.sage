@@ -431,12 +431,12 @@ def test_pi_s(n):
         p.store_public_keys(public_keys)
         p.store_encrypted_shares_and_proof(enc_shares, pi_share)
 
-        if p.verify_encrypted_shares():
-            p.generate_decrypted_share()
-            assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
-            p.nizk_proof_for_dleq()
-            decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-            assert len(decrypted_shares_and_proofs[i]) == 2
+        assert p.verify_encrypted_shares()
+        p.generate_decrypted_share()
+        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
+        p.nizk_proof_for_dleq()
+        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+        assert len(decrypted_shares_and_proofs[i]) == 2
 
     print("---------------------------------------------")
     print("Party encrypted share verification successful")
@@ -475,5 +475,5 @@ def test_pi_s(n):
 
 
 n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
-benchmark_pi_s(n)
-#test_pi_s(n)
+# benchmark_pi_s(n)
+test_pi_s(n)
