@@ -100,6 +100,7 @@ def fast_multiply(k,P): # use montgomery ladder and y-recovery
 class Party:
     def __init__(self, index, n):
         self.n = n
+        self.t = n//2 - 1
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, G)
@@ -188,7 +189,7 @@ class Party:
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
-        for j in range(1, self.n//2+1):
+        for j in range(1, self.t+2):
             if j != i:
                 lambda_i *= Zq(j)/(Zq(j)-Zq(i))
         
@@ -203,7 +204,7 @@ class Party:
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
                 counter += 1
-            if counter == self.n//2: # t+1 shares needed to reconstruct
+            if counter == self.t+1: # t+1 shares needed to reconstruct
                 break
         
         return reconstructed_secret
