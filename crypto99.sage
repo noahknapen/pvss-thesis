@@ -329,7 +329,7 @@ def test_crypto99(n):
         p.store_commitments(commitments)
         p.store_encrypted_shares_and_proof(enc_shares, pi_share)
 
-        assert p.verify_encrypted_shares() #! Verification does not work
+        assert p.verify_encrypted_shares()
         p.generate_decrypted_share()
         assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
         p.dleq_share()
