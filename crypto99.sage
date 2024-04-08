@@ -145,8 +145,9 @@ class Party:
         for i in range(self.n):
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
             for j in range(self.t):
-                reconstructed_gen_evals[i] += fast_multiply(j, fast_multiply(i, self.commitments[j]))
-                reconstructed_gen_eval_str += str(reconstructed_gen_evals[i]) + str(",")
+                    reconstructed_gen_evals[i] += fast_multiply((i+1)^j, self.commitments[j])
+                    
+            reconstructed_gen_eval_str += str(reconstructed_gen_evals[i]) + str(",")
         
         enc_eval_str = enc_eval_str[:-1]
         reconstructed_gen_eval_str = reconstructed_gen_eval_str[:-1]
@@ -262,7 +263,7 @@ class Dealer:
     
     def dleq_pol(self):
         # proof knowledge of self.f[i]
-        # DLEQ(g, X_i=generator_evals_i, y_i=public_keys, Y_i=encrypted_shares[i])
+        # DLEQ(g, generator_evals, public_keys, encrypted_shares)
         evals = [self.f(x=i) for i in range(1, self.n+1)]
         gen_eval_str = ""
         enc_eval_str = ""
@@ -278,6 +279,11 @@ class Dealer:
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
             a1_str += str(fast_multiply(w, G)) + str(",")
             a2_str += str(fast_multiply(w, self.public_keys[i])) + str(",")
+        
+        gen_eval_str = gen_eval_str[:-1]
+        enc_eval_str = enc_eval_str[:-1]
+        a1_str = a1_str[:-1]
+        a2_str = a2_str[:-1]
         
         c = Integer(Zq(int(sha256(str(gen_eval_str + enc_eval_str + a1_str + a2_str).encode()).hexdigest(), 16)))
 
