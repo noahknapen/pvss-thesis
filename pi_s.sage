@@ -465,7 +465,7 @@ def test_pi_s(n):
         p = parties[i]
         reconstructed_secret = p.reconstruct_secret()
         generator_secret = fast_multiply(global_secret, G)
-        assert  generator_secret[0] == reconstructed_secret[0]
+        assert  generator_secret == reconstructed_secret
 
     print("--------------------------------------")
     print("Party secret reconstruction successful")

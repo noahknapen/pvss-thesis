@@ -205,7 +205,7 @@ class Party:
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
-        for j in range(1, self.n//2+1):
+        for j in range(1, self.n//2):
             if j != i:
                 lambda_i *= Zq(j)/(Zq(j)-Zq(i))
         
@@ -220,7 +220,7 @@ class Party:
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
                 counter += 1
-            if counter == self.n//2: # t+1 shares needed to reconstruct
+            if counter == self.n//2-1: # t shares needed to reconstruct
                 break
         
         return reconstructed_secret
@@ -330,16 +330,20 @@ def test_crypto99(n):
         p.store_encrypted_shares_and_proof(enc_shares, pi_share)
 
         assert p.verify_encrypted_shares()
-        p.generate_decrypted_share()
-        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
-        p.dleq_share()
-        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-        assert len(decrypted_shares_and_proofs[i]) == 2
 
     print("---------------------------------------------")
     print("Party encrypted share verification successful")
     print("---------------------------------------------")
-        
+
+    for i in range(n):
+        p = parties[i]
+        p.generate_decrypted_share()
+        assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.decrypted_share)
+        p.dleq_share()
+        decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
+        assert len(decrypted_shares_and_proofs[i]) == 2
+
+            
     for i in range(n):
         p = parties[i]
         p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
