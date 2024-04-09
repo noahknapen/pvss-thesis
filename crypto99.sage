@@ -177,8 +177,8 @@ class Party:
         enc_share_str = str(self.encrypted_shares[self.index-1])
         
         w = Zq.random_element()
-        a1_str = str(fast_multiply(w, G)) + str(",")
-        a2_str = str(fast_multiply(w, self.decrypted_share)) + str(",")
+        a1_str = str(fast_multiply(w, G))
+        a2_str = str(fast_multiply(w, self.decrypted_share))
         
         # cryptographic hash of y_i and Y_i, a1 and a2
         c = Integer(Zq(int(sha256(str(pub_key_str + enc_share_str + a1_str + a2_str).encode()).hexdigest(), 16)))
@@ -205,7 +205,7 @@ class Party:
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
-        for j in range(1, self.n//2):
+        for j in range(1, self.t+1):
             if j != i:
                 lambda_i *= Zq(j)/(Zq(j)-Zq(i))
         
@@ -220,10 +220,11 @@ class Party:
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
                 counter += 1
-            if counter == self.n//2-1: # t shares needed to reconstruct
+            if counter == self.t: # t shares needed to reconstruct
                 break
-        
+
         return reconstructed_secret
+
 
 class Dealer:
     def __init__(self, public_keys, n):
@@ -341,14 +342,15 @@ def test_crypto99(n):
         assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.decrypted_share)
         p.dleq_share()
         decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-        assert len(decrypted_shares_and_proofs[i]) == 2
+        assert len(decrypted_shares_and_proofs[i]) == 2 and decrypted_shares_and_proofs[i][0] != 0 and decrypted_shares_and_proofs[i][1] != 0
 
             
     for i in range(n):
         p = parties[i]
         p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
         assert len(p.decrypted_shares_and_proof) == n
-        assert len(p.decrypted_shares_and_proof[0]) == 2
+        for j in range(n):
+            assert len(p.decrypted_shares_and_proof[j]) == 2 and p.decrypted_shares_and_proof[j][0] != 0 and p.decrypted_shares_and_proof[j][1] != 0
 
     print("---------------------------------------------")
     print("Party decrypted share distribution successful")
@@ -358,6 +360,8 @@ def test_crypto99(n):
         p = parties[i]
         p.verify_decrypted_shares()
         assert len(p.valid_decrypted_shares) == n
+        for j in range(n):
+            assert p.valid_decrypted_shares[j] != 0
 
     print("---------------------------------------------")
     print("Party decrypted share verification successful")
@@ -367,7 +371,7 @@ def test_crypto99(n):
         p = parties[i]
         reconstructed_secret = p.reconstruct_secret()
         generator_secret = fast_multiply(global_secret, G)
-        assert  generator_secret[0] == reconstructed_secret[0]
+        assert generator_secret == reconstructed_secret
 
     print("--------------------------------------")
     print("Party secret reconstruction successful")
@@ -375,6 +379,6 @@ def test_crypto99(n):
 
     print("All tests successful")
 
-
-n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+#! Does not work for all values of n
+n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 test_crypto99(n) 
