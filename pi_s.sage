@@ -437,7 +437,7 @@ def test_pi_s(n):
         assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.dec_share)
         p.nizk_proof_for_dleq()
         decrypted_shares_and_proofs[i] = p.broadcast_decrypted_share_and_proof()
-        assert len(decrypted_shares_and_proofs[i]) == 2
+        assert len(decrypted_shares_and_proofs[i]) == 2 and decrypted_shares_and_proofs[i][0] != 0 and decrypted_shares_and_proofs[i][1] != 0
 
     print("---------------------------------------------")
     print("Party encrypted share verification successful")
@@ -447,7 +447,8 @@ def test_pi_s(n):
         p = parties[i]
         p.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
         assert len(p.decrypted_shares_and_proof) == n
-        assert len(p.decrypted_shares_and_proof[0]) == 2
+        for j in range(n):
+            assert len(p.decrypted_shares_and_proof[j]) == 2 and p.decrypted_shares_and_proof[j][0] != 0 and p.decrypted_shares_and_proof[j][1] != 0
 
     print("---------------------------------------------")
     print("Party decrypted share distribution successful")
@@ -457,6 +458,8 @@ def test_pi_s(n):
         p = parties[i]
         p.verify_decrypted_shares()
         assert len(p.valid_decrypted_shares) == n
+        for j in range(n):
+            assert p.valid_decrypted_shares[j] != 0
 
     print("---------------------------------------------")
     print("Party decrypted share verification successful")
@@ -466,7 +469,7 @@ def test_pi_s(n):
         p = parties[i]
         reconstructed_secret = p.reconstruct_secret()
         generator_secret = fast_multiply(global_secret, G)
-        assert  generator_secret == reconstructed_secret
+        assert generator_secret == reconstructed_secret
 
     print("--------------------------------------")
     print("Party secret reconstruction successful")
