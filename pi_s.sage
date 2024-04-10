@@ -487,7 +487,11 @@ def pi_s_stages(n):
         parties[i-1] = p
     
     dealer = Dealer(public_keys, n)
+    total_time_dealer = time()
     [encrypted_shares, dealer_proof] = dealer.share_stage()
+    total_time_dealer = time() - total_time_dealer
+
+    total_time_party = time()
 
     for i in range(n):
         p = parties[i]
@@ -496,7 +500,12 @@ def pi_s_stages(n):
     for i in range(n):
         p = parties[i]
         p.reconstruction_stage(decrypted_shares_and_proofs)
+    
+    total_time_party = time() - total_time_party
 
+    print("Total time for dealer: ", total_time_dealer, " seconds")
+    print("Total time for ", n, " parties: ", total_time_party, " seconds")
+    print("Average time: ", total_time_dealer + total_time_party/n, " seconds")
 
 n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 # benchmark_pi_s(n)

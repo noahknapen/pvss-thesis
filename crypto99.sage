@@ -96,11 +96,6 @@ def recover_y(P,Q,R):
 def fast_multiply(k,P): # use montgomery ladder and y-recovery
     PM = [P[0],P[2]] # X-Z coordinates
     x0,x1 = Montgomery_ladder(Integer(k),PM)
-    print("-------------------")
-    print("P: ", P)
-    print("x0: ", x0)
-    print("x1: ", x1)
-    print("-------------------")
     return recover_y(P,x0,x1)
 
 
@@ -547,7 +542,11 @@ def crypto99_stages(n):
         parties[i-1] = p
     
     dealer = Dealer(public_keys, n)
+    total_time_dealer = time()
     [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
+    total_time_dealer = time() - total_time_dealer
+
+    total_time_party = time()
 
     for i in range(n):
         p = parties[i]
@@ -556,6 +555,12 @@ def crypto99_stages(n):
     for i in range(n):
         p = parties[i]
         p.reconstruction_stage(decrypted_shares_and_proofs)
+    
+    total_time_party = time() - total_time_party
+
+    print("Total time for dealer: ", total_time_dealer, " seconds")
+    print("Total time for ", n, " parties: ", total_time_party, " seconds")
+    print("Average time: ", total_time_dealer + total_time_party/n, " seconds")
 
 
 #! Does not work for all values of n
