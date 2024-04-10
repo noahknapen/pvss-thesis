@@ -112,7 +112,7 @@ class Party:
         self.decrypted_shares_and_proof = [0 for _ in range(self.n)]
         self.valid_decrypted_shares = [0 for _ in range(self.n)]
     
-    def publish_public_key(self):
+    def broadcast_public_key(self):
         return self.public_key
 
     def store_public_keys(self, public_keys):
@@ -285,7 +285,7 @@ def benchmark_pi_s(n):
     for i in range(1,n+1):
         temp_Tparty_init = time()
         p = Party(i, n)
-        public_keys[i-1] = p.publish_public_key()
+        public_keys[i-1] = p.broadcast_public_key()
         parties[i-1] = p
         total_Tparty_init += time() - temp_Tparty_init
 
@@ -295,7 +295,6 @@ def benchmark_pi_s(n):
     dealer = Dealer(public_keys, n)
     Tdealer_init = time() - Tdealer_init
 
-    #(enc_shares, pi_share) = dealer.share_stage()
     Tdealer_pol_generation = time()
     dealer.generate_polynomial()
     Tdealer_pol_generation = time() - Tdealer_pol_generation
@@ -410,7 +409,7 @@ def test_pi_s(n):
 
     for i in range(1,n+1):
         p = Party(i, n)
-        public_keys[i-1] = p.publish_public_key()
+        public_keys[i-1] = p.broadcast_public_key()
         parties[i-1] = p
 
     print("------------------------------------------------------")
@@ -477,7 +476,29 @@ def test_pi_s(n):
 
     print("All tests successful")
 
+def pi_s_stages(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
+
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.broadcast_public_key()
+        parties[i-1] = p
+    
+    dealer = Dealer(public_keys, n)
+    [encrypted_shares, dealer_proof] = dealer.share_stage()
+
+    for i in range(n):
+        p = parties[i]
+        decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
+    
+    for i in range(n):
+        p = parties[i]
+        p.reconstruction_stage(decrypted_shares_and_proofs)
+
 
 n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 # benchmark_pi_s(n)
-test_pi_s(n)
+# test_pi_s(n)
+pi_s_stages(n)

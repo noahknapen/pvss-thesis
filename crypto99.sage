@@ -96,6 +96,11 @@ def recover_y(P,Q,R):
 def fast_multiply(k,P): # use montgomery ladder and y-recovery
     PM = [P[0],P[2]] # X-Z coordinates
     x0,x1 = Montgomery_ladder(Integer(k),PM)
+    print("-------------------")
+    print("P: ", P)
+    print("x0: ", x0)
+    print("x1: ", x1)
+    print("-------------------")
     return recover_y(P,x0,x1)
 
 
@@ -225,6 +230,20 @@ class Party:
 
         return reconstructed_secret
 
+    def verification_stage(self, public_keys, commitments, encrypted_shares, dealer_proof):
+        self.store_public_keys(public_keys)
+        self.store_commitments(commitments)
+        self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
+
+        if self.verify_encrypted_shares():
+            self.generate_decrypted_share()
+            self.dleq_share()
+            return self.broadcast_decrypted_share_and_proof()
+
+    def reconstruction_stage(self, decrypted_shares_and_proofs):
+        self.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        self.verify_decrypted_shares()
+        return self.reconstruct_secret()
 
 class Dealer:
     def __init__(self, public_keys, n):
@@ -235,6 +254,13 @@ class Dealer:
         self.f = 0
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.proof = [0,0]
+    
+    def share_stage(self):
+        self.generate_polynomial()
+        self.generate_commitments()
+        self.generate_encrypted_evals()
+        self.dleq_pol()
+        return [self.commitments, self.encrypted_shares, self.proof]
 
     def broadcast_commitments(self):
         return self.commitments
@@ -313,7 +339,6 @@ def benchmark_crypto99(n):
     dealer = Dealer(public_keys, n)
     Tdealer_init = time() - Tdealer_init
 
-    #(enc_shares, pi_share) = dealer.share_stage()
     Tdealer_pol_generation = time()
     dealer.generate_polynomial()
     Tdealer_pol_generation = time() - Tdealer_pol_generation
@@ -511,7 +536,30 @@ def test_crypto99(n):
 
     print("All tests successful")
 
+def crypto99_stages(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
+
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.broadcast_public_key()
+        parties[i-1] = p
+    
+    dealer = Dealer(public_keys, n)
+    [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
+
+    for i in range(n):
+        p = parties[i]
+        decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, commitments, encrypted_shares, dealer_proof)
+    
+    for i in range(n):
+        p = parties[i]
+        p.reconstruction_stage(decrypted_shares_and_proofs)
+
+
 #! Does not work for all values of n
 n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
-benchmark_crypto99(n)
+#benchmark_crypto99(n)
 #test_crypto99(n) 
+crypto99_stages(n)
