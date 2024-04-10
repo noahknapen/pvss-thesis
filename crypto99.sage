@@ -105,7 +105,7 @@ class Party:
         self.t = n//2-1
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
-        self.public_key = fast_multiply(self.secret_key, G)
+        self.public_key = fast_multiply(self.secret_key, H)
         self.public_keys = [0 for _ in range(self.n)]
         self.commitments = [0 for _ in range(self.t)]
         self.encrypted_shares = [0 for _ in range(self.n)]
@@ -172,12 +172,12 @@ class Party:
     
     def dleq_share(self):
         # proof knowledge of a correct self.decrypted_share
-        # DLEQ(g, y_i=self.public_key, X_i=self.decrypted_share, Y_i=encrypted_shares[i])
+        # DLEQ(H, y_i=self.public_key, X_i=self.decrypted_share, Y_i=encrypted_shares[i])
         pub_key_str = str(self.public_key)
         enc_share_str = str(self.encrypted_shares[self.index-1])
         
         w = Zq.random_element()
-        a1_str = str(fast_multiply(w, G))
+        a1_str = str(fast_multiply(w, H))
         a2_str = str(fast_multiply(w, self.decrypted_share))
         
         # cryptographic hash of y_i and Y_i, a1 and a2
@@ -195,7 +195,7 @@ class Party:
 
             reconstructed_pub_key_str = str(self.public_keys[i])
             reconstructed_enc_share_str = str(self.encrypted_shares[i])
-            reconstructed_a1_str = str(fast_multiply(r, G) + fast_multiply(c, self.public_keys[i]))
+            reconstructed_a1_str = str(fast_multiply(r, H) + fast_multiply(c, self.public_keys[i]))
             reconstructed_a2_str = str(fast_multiply(r, decrypted_share) + fast_multiply(c, self.encrypted_shares[i]))
 
             reconstructed_c = Integer(Zq(int(sha256(str(reconstructed_pub_key_str + reconstructed_enc_share_str + reconstructed_a1_str + reconstructed_a2_str).encode()).hexdigest(), 16)))
@@ -522,7 +522,7 @@ def test_crypto99(n):
     for i in range(n):
         p = parties[i]
         reconstructed_secret = p.reconstruct_secret()
-        generator_secret = fast_multiply(global_secret, G)
+        generator_secret = fast_multiply(global_secret, H)
         assert generator_secret == reconstructed_secret
 
     print("--------------------------------------")
@@ -566,5 +566,5 @@ def crypto99_stages(n):
 #! Does not work for all values of n
 n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 #benchmark_crypto99(n)
-#test_crypto99(n) 
-crypto99_stages(n)
+test_crypto99(n) 
+#crypto99_stages(n)

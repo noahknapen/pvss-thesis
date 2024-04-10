@@ -1,6 +1,5 @@
 from hashlib import sha256
 from time import time
-#TODO: create measurements
 # Stage 2: See applications of PVSS in the literature and implement other PVSS schemes
 
 p = 2^255 - 19
