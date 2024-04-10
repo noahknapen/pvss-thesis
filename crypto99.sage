@@ -318,10 +318,9 @@ def benchmark_crypto99(n):
     dealer.generate_polynomial()
     Tdealer_pol_generation = time() - Tdealer_pol_generation
 
-    #! New
-    Tdealer_commitments_generations = time()
+    Tdealer_commitments_generation = time()
     dealer.generate_commitments()
-    Tdealer_commitments_generations = time() - Tdealer_commitments_generations
+    Tdealer_commitments_generation = time() - Tdealer_commitments_generation
     
     Tdealer_comm = time()
     commitments = dealer.broadcast_commitments()
@@ -400,6 +399,7 @@ def benchmark_crypto99(n):
     print("initialization time:                             ", Tdealer_init, " seconds")
     print("communication time:                              ", Tdealer_comm, " seconds")
     print("polynomial generation time:                      ", Tdealer_pol_generation, " seconds")
+    print("commitments generation time:                     ", Tdealer_commitments_generation, " seconds")
     print("shares encryption time:                          ", Tdealer_encrypt_shares, " seconds")
     print("shares proof generation time:                    ", Tdealer_proof, " seconds")
     print("------------------------------party-------------------------------")
@@ -414,7 +414,7 @@ def benchmark_crypto99(n):
     print("dealer + average party communication time:       ", Tdealer_comm+avg_Tparty_comm, "seconds")
     print("dealer + total time for ", n, " parties:         ", Tdealer_comm+total_Tparty_comm, " seconds")
     print("--------------------------sharing stage---------------------------")
-    print("dealer side time:                                ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm, " seconds")
+    print("dealer side time:                                ", Tdealer_pol_generation+Tdealer_commitments_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm, " seconds")
     print("average party side time:                         ", avg_Tparty_comm, " seconds")
     print("total average time:                              ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm+avg_Tparty_comm, " seconds")
     print("total time for ", n, " parties:                  ", Tdealer_pol_generation+Tdealer_encrypt_shares+Tdealer_proof+Tdealer_comm+total_Tparty_comm, " seconds")
