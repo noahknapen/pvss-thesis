@@ -102,7 +102,7 @@ def fast_multiply(k,P): # use montgomery ladder and y-recovery
 class Party:
     def __init__(self, index, n):
         self.n = n
-        self.t = n//2-1
+        self.t = (n-1)//2 #! Honest majority setting and only odd n values
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, H)
@@ -144,7 +144,7 @@ class Party:
 
         for i in range(self.n):
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
-            for j in range(self.t):
+            for j in range(self.t+1):
                     reconstructed_gen_evals[i] += fast_multiply((i+1)^j, self.commitments[j])
                     
             reconstructed_gen_eval_str += str(reconstructed_gen_evals[i]) + str(",")
@@ -205,7 +205,7 @@ class Party:
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
-        for j in range(1, self.t+1):
+        for j in range(1, self.t+2):
             if j != i:
                 lambda_i *= Zq(j)/(Zq(j)-Zq(i))
         
@@ -244,8 +244,8 @@ class Dealer:
     def __init__(self, public_keys, n):
         self.public_keys = public_keys
         self.n = n
-        self.t = n//2-1 # Honest majority setting
-        self.commitments = [0 for _ in range(self.t)]
+        self.t = (n-1)//2 #! Honest majority setting and only odd n values
+        self.commitments = [0 for _ in range(self.t+1)]
         self.f = 0
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.proof = [0,0]
@@ -264,14 +264,14 @@ class Dealer:
         return self.encrypted_shares, self.proof
 
     def generate_polynomial(self):
-        f = RP.random_element(degree=self.t-1)
+        f = RP.random_element(degree=self.t)
         global global_secret #! Only for testing purposes
         global_secret = f(x=0)
         self.f = f
     
     def generate_commitments(self):
         coefs = self.f.coefficients(sparse=False)
-        for i in range(self.t):
+        for i in range(self.t+1):
             self.commitments[i] = fast_multiply(coefs[i], G)
 
     def generate_encrypted_evals(self):
@@ -546,25 +546,28 @@ def crypto99_stages(n):
     [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
     total_time_dealer = time() - total_time_dealer
 
-    total_time_party = time()
+    total_time_party_verification = time()
 
     for i in range(n):
         p = parties[i]
         decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, commitments, encrypted_shares, dealer_proof)
+
+    total_time_party_verification = time() - total_time_party_verification
+    total_time_party_reconstruction = time()
     
     for i in range(n):
         p = parties[i]
         p.reconstruction_stage(decrypted_shares_and_proofs)
     
-    total_time_party = time() - total_time_party
+    total_time_party_reconstruction = time() - total_time_party_reconstruction
 
     print("Total time for dealer: ", total_time_dealer, " seconds")
-    print("Total time for ", n, " parties: ", total_time_party, " seconds")
-    print("Average time: ", total_time_dealer + total_time_party/n, " seconds")
+    print("Average verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
+    print("Average reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
 
 
 #! Does not work for all values of n
-n = 8 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+n = 33 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
 #benchmark_crypto99(n)
-test_crypto99(n) 
-#crypto99_stages(n)
+#test_crypto99(n) 
+crypto99_stages(n)
