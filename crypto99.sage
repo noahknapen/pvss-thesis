@@ -566,8 +566,7 @@ def crypto99_stages(n):
     print("Average reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
 
 
-#! Does not work for all values of n
-n = 33 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+n = 33
 #benchmark_crypto99(n)
 #test_crypto99(n) 
 crypto99_stages(n)

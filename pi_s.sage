@@ -99,7 +99,7 @@ def fast_multiply(k,P): # use montgomery ladder and y-recovery
 class Party:
     def __init__(self, index, n):
         self.n = n
-        self.t = n//2 - 1
+        self.t = (n-1)//2 #! Honest majority setting and only odd n values
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, G)
@@ -227,7 +227,7 @@ class Dealer:
     def __init__(self, public_keys, n):
         self.public_keys = public_keys
         self.n = n
-        self.t = n//2-1 # Honest majority setting
+        self.t = (n-1)//2 #! Honest majority setting and only odd n values
         self.f = 0
         self.encrypted_shares = [0 for _ in range(self.n)]
         self.proof = [0,0]
@@ -490,23 +490,26 @@ def pi_s_stages(n):
     [encrypted_shares, dealer_proof] = dealer.share_stage()
     total_time_dealer = time() - total_time_dealer
 
-    total_time_party = time()
+    total_time_party_verification = time()
 
     for i in range(n):
         p = parties[i]
         decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
     
+    total_time_party_verification = time() - total_time_party_verification
+    total_time_party_reconstruction = time()
+    
     for i in range(n):
         p = parties[i]
         p.reconstruction_stage(decrypted_shares_and_proofs)
     
-    total_time_party = time() - total_time_party
+    total_time_party_reconstruction = time() - total_time_party_reconstruction
 
     print("Total time for dealer: ", total_time_dealer, " seconds")
-    print("Total time for ", n, " parties: ", total_time_party, " seconds")
-    print("Average time: ", total_time_dealer + total_time_party/n, " seconds")
+    print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
+    print("Total reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
 
-n = 10 #! Uneven values or values under 6 do not work. After further experimentation, it seems that the code works for an uneven number and even number with the same floor division by 2, then it does not, and for the next even number it works again.
+n = 33 #! 2^k+1 values work, but why?
 # benchmark_pi_s(n)
 # test_pi_s(n)
 pi_s_stages(n)
