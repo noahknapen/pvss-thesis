@@ -137,6 +137,9 @@ class Party:
 
             if c == reconstructed_c:
                 self.valid_decrypted_shares[i] = decrypted_share
+            
+            if len(self.valid_decrypted_shares) == self.t:
+                break
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
@@ -280,5 +283,5 @@ def crypto99_stages(n):
     print("Average reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
 
 
-n = 33
+n = 31
 crypto99_stages(n)

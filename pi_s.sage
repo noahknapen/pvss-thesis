@@ -140,7 +140,7 @@ class Party:
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
                 counter += 1
-            if counter == self.t+1: # t+1 shares needed to reconstruct
+            if counter == self.t: # t+1 shares needed to reconstruct
                 break
         
         return reconstructed_secret 
@@ -238,5 +238,5 @@ def pi_s_stages(n):
     print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
     print("Total reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
 
-n = 33 #! 2^k+1 values work, but why?
+n = 31
 pi_s_stages(n)
