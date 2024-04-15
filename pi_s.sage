@@ -99,9 +99,9 @@ class Party:
         self.share_proof = [d,z]
 
     def verify_decrypted_shares(self):
-        self.valid_decrypted_shares = [0 for _ in range(self.n)]
+        self.valid_decrypted_shares = []
 
-        for i in range(len(self.decrypted_shares_and_proof)):
+        for i in range(self.t):
             decrypted_share = self.decrypted_shares_and_proof[i][0]
             share_proof = self.decrypted_shares_and_proof[i][1]
             d = share_proof[0]
@@ -121,7 +121,9 @@ class Party:
             reconstructed_d = Integer(Zq(int(sha256(str(temp_d).encode()).hexdigest(),16)))
 
             if d == reconstructed_d:
-                self.valid_decrypted_shares[i] = decrypted_share
+                self.valid_decrypted_shares.append(decrypted_share)
+            else:
+                self.valid_decrypted_shares.append(0)
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
@@ -134,15 +136,11 @@ class Party:
     def reconstruct_secret(self):
         # From https://github.com/darkrenaissance/darkfi/blob/master/script/research/pvss/pvss.sage
         reconstructed_secret = E(0)
-        counter = 0
 
         for i in range(len(self.valid_decrypted_shares)): # w.l.o.g. we take the first t+1 valid shares, but randomly chosen t+1 shares can also be chosen
             if self.valid_decrypted_shares[i] != 0:
                 reconstructed_secret += fast_multiply(self.lambda_func(i+1), self.valid_decrypted_shares[i])
-                counter += 1
-            if counter == self.t: # t+1 shares needed to reconstruct
-                break
-        
+
         return reconstructed_secret 
 
 
