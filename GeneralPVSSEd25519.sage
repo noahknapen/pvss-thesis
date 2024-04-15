@@ -94,4 +94,3 @@ def fast_multiply(k,P): # use montgomery ladder and y-recovery
     PM = [P[0],P[2]] # X-Z coordinates
     x0,x1 = Montgomery_ladder(Integer(k),PM)
     return recover_y(P,x0,x1)
-
