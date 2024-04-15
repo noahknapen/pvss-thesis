@@ -102,6 +102,10 @@ class Party:
         self.valid_decrypted_shares = []
 
         for i in range(self.t):
+            if i == self.index-1:
+                self.valid_decrypted_shares.append(self.decrypted_share)
+                continue
+
             decrypted_share = self.decrypted_shares_and_proof[i][0]
             share_proof = self.decrypted_shares_and_proof[i][1]
             d = share_proof[0]
