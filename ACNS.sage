@@ -31,13 +31,36 @@ class Party:
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, H)
+    
+    def verification_stage(self, public_keys, encrypted_shares, dealer_proof):
+        self.store_public_keys(public_keys)
+        self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
+
+        if (self.verify_encrypted_shares()):
+            self.generate_decrypted_share()
+            self.dleq_share()
+            return self.broadcast_decrypted_share_and_proof()
+
+    def reconstruction_stage(self, decrypted_shares_and_proofs):
+        self.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
+        self.verify_decrypted_shares()
+        return self.reconstruct_secret()
 
     def broadcast_public_key(self):
         return self.public_key
+    
+    def broadcast_decrypted_share_and_proof(self):
+        return self.decrypted_share, self.share_proof
+    
+    def store_public_keys(self, public_keys):
+        self.public_keys = public_keys
 
     def store_encrypted_shares_and_proof(self, encrypted_shares, dealer_proof):
         self.encrypted_shares = encrypted_shares # Assume shares are stored in order of party indices
         self.dealer_proof = dealer_proof
+
+    def store_decrypted_shares_and_proofs(self, decrypted_shares_and_proofs):
+        self.decrypted_shares_and_proof = decrypted_shares_and_proofs
 
     def verify_encrypted_shares(self):
         if not self.verify_dleq_pol():
@@ -173,6 +196,13 @@ class Dealer:
         self.public_keys = public_keys
         self.n = n
         self.t = (n-1)//2 #! Honest majority setting and only odd n values
+
+    def share_stage(self):
+        self.generate_polynomial()
+        self.generate_commitments()
+        self.generate_encrypted_evals()
+        self.dleq_pol()
+        return self.broadcast_share_and_proof()
 
     def broadcast_share_and_proof(self):
         return self.encrypted_shares, self.proof
