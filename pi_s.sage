@@ -101,7 +101,7 @@ class Party:
     def verify_decrypted_shares(self):
         self.valid_decrypted_shares = []
 
-        for i in range(self.t):
+        for i in range(self.t+1):
             if i == self.index-1:
                 self.valid_decrypted_shares.append(self.decrypted_share)
                 continue
@@ -229,16 +229,18 @@ def pi_s_stages(n):
     
     total_time_party_verification = time() - total_time_party_verification
     total_time_party_reconstruction = time()
+    secret = fast_multiply(global_secret, G)
     
     for i in range(n):
         p = parties[i]
-        p.reconstruction_stage(decrypted_shares_and_proofs)
+        reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
+        assert secret == reconstructed_secret
     
     total_time_party_reconstruction = time() - total_time_party_reconstruction
 
     print("Total time for dealer: ", total_time_dealer, " seconds")
-    print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
-    print("Total reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
+    print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds") #TODO This includes ...
+    print("Total reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
 
-n = 31
+n = 33 #! n should be odd in majority honest setting
 pi_s_stages(n)
