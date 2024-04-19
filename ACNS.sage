@@ -72,7 +72,7 @@ class Party:
         for i in range(self.n):
             expr += fast_multiply(orth_code[i], self.commitments[i])
         
-        return expr == 1 #! This will not work as it has to be the identity element of an elliptic curve point
+        return expr == fast_multiply(0, G)
     
     def verify_dleq_pol(self):
         self.commitments = self.dealer_proof[0]
@@ -80,6 +80,7 @@ class Party:
         r_list = self.dealer_proof[2]
 
         enc_eval_str = ""
+        commitment_str = ""
 
         for i in range(self.n):
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
@@ -111,7 +112,7 @@ class Party:
         return lambda_i
     
     def generate_orth_code(self):
-        f = RP.random_element(degree=self.n-self.t)
+        f = RP.random_element(degree=self.n-self.t-1)
         evals = [f(x=i) for i in range(1, self.n+1)]
         return [self.orth_coeff(i)*evals[i] for i in range(self.n)]
 
@@ -216,7 +217,7 @@ class Dealer:
         evals = [self.f(x=i) for i in range(1, self.n+1)]
         self.commitments = []
 
-        for i in range(self.t+1):
+        for i in range(self.n):
             self.commitments.append(fast_multiply(evals[i], G))
 
     def generate_encrypted_evals(self):
@@ -258,3 +259,42 @@ class Dealer:
             r_list[i] = w_list[i] - e*evals[i]
         
         self.proof = [self.commitments, e, r_list]
+
+def acns_stages(n):
+    public_keys = [0 for _ in range(n)]
+    parties = [0 for _ in range(n)]
+    decrypted_shares_and_proofs = [0 for _ in range(n)]
+
+    for i in range(1,n+1):
+        p = Party(i, n)
+        public_keys[i-1] = p.broadcast_public_key()
+        parties[i-1] = p
+    
+    dealer = Dealer(public_keys, n)
+    total_time_dealer = time()
+    [encrypted_shares, dealer_proof] = dealer.share_stage()
+    total_time_dealer = time() - total_time_dealer
+
+    total_time_party_verification = time()
+
+    for i in range(n):
+        p = parties[i]
+        decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
+    
+    total_time_party_verification = time() - total_time_party_verification
+    total_time_party_reconstruction = time()
+    
+    for i in range(n):
+        p = parties[i]
+        p.reconstruction_stage(decrypted_shares_and_proofs)
+    
+    total_time_party_reconstruction = time() - total_time_party_reconstruction
+
+    print("Total time for dealer: ", total_time_dealer, " seconds")
+    print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
+    print("Total reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
+
+n = 31
+# acns_stages(n)
+print(fast_multiply(Zq(0), G))
+print(fast_multiply(Zq(0), H))
