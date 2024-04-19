@@ -175,8 +175,6 @@ class Dealer:
     
     def generate_polynomial(self):
         f = RP.random_element(degree=self.t)
-        global global_secret #! Only for testing purposes
-        global_secret = f(x=0)
         self.f = f
 
     def generate_encrypted_evals(self, pol):
@@ -229,7 +227,7 @@ def pi_s_stages(n):
     
     total_time_party_verification = time() - total_time_party_verification
     total_time_party_reconstruction = time()
-    secret = fast_multiply(global_secret, G)
+    secret = fast_multiply(dealer.f(x=0), G)
     
     for i in range(n):
         p = parties[i]

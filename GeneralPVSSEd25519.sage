@@ -5,7 +5,6 @@ Am = 486662          # Montgomery A-coefficient
 Ar = int((Am+2)/4)   # reduced Montgomery coefficent
 E = EllipticCurve(GF(p),[0,Am,0,1,0])
 RP.<x> = PolynomialRing(Zq)
-global_secret = 0
 
 G = E.random_point() # generator 
 while G.order() != q:

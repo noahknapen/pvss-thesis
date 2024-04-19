@@ -195,8 +195,6 @@ class Dealer:
 
     def generate_polynomial(self):
         f = RP.random_element(degree=self.t)
-        global global_secret #! Only for testing purposes
-        global_secret = f(x=0)
         self.f = f
     
     def generate_commitments(self):
@@ -270,7 +268,7 @@ def crypto99_stages(n):
 
     total_time_party_verification = time() - total_time_party_verification
     total_time_party_reconstruction = time()
-    secret = fast_multiply(global_secret, G)
+    secret = fast_multiply(dealer.f(x=0), H)
 
     for i in range(n):
         p = parties[i]
@@ -282,8 +280,8 @@ def crypto99_stages(n):
 
     print("Total time for dealer: ", total_time_dealer, " seconds")
     print("Average verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
-    print("Average reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
+    print("Average reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/dealer.t+1, " seconds")
 
 
-n = 31
+n = 33
 crypto99_stages(n)
