@@ -218,6 +218,7 @@ def pi_s_stages(n):
     total_time_dealer = time()
     [encrypted_shares, dealer_proof] = dealer.share_stage()
     total_time_dealer = time() - total_time_dealer
+    secret = fast_multiply(dealer.f(x=0), G)
 
     total_time_party_verification = time()
 
@@ -227,7 +228,6 @@ def pi_s_stages(n):
     
     total_time_party_verification = time() - total_time_party_verification
     total_time_party_reconstruction = time()
-    secret = fast_multiply(dealer.f(x=0), G)
     
     for i in range(n):
         p = parties[i]

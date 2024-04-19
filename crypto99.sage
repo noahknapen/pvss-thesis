@@ -259,6 +259,7 @@ def crypto99_stages(n):
     total_time_dealer = time()
     [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
     total_time_dealer = time() - total_time_dealer
+    secret = fast_multiply(dealer.f(x=0), H)
 
     total_time_party_verification = time()
 
@@ -268,19 +269,17 @@ def crypto99_stages(n):
 
     total_time_party_verification = time() - total_time_party_verification
     total_time_party_reconstruction = time()
-    secret = fast_multiply(dealer.f(x=0), H)
 
     for i in range(n):
         p = parties[i]
-        p.reconstruction_stage(decrypted_shares_and_proofs)
+        reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
+        assert secret == reconstructed_secret
     
     total_time_party_reconstruction = time() - total_time_party_reconstruction
-    reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
-    assert secret == reconstructed_secret
 
     print("Total time for dealer: ", total_time_dealer, " seconds")
     print("Average verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
-    print("Average reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/dealer.t+1, " seconds")
+    print("Average reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/(dealer.t+1), " seconds")
 
 
 n = 33
