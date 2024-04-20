@@ -1,6 +1,7 @@
 from hashlib import sha256
 from time import time
 import os
+import random
 
 os.system('sage --preparse ../lib/GeneralPVSSEd25519.sage')
 os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
@@ -34,13 +35,8 @@ class BulletinBoard:
             reconstructed_a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
             reconstructed_b1 = fast_multiply(r1, H) + fast_multiply(d1, U - H)
 
-        #if not (c == d0 + d1 and a0 == reconstructed_a0 and b0 == reconstructed_b0 and a1 == reconstructed_a1 and b1 == reconstructed_b1):
-        #    return False
-        assert c == d0 + d1
-        assert a0 == reconstructed_a0
-        assert b0 == reconstructed_b0
-        assert a1 == reconstructed_a1
-        assert b1 == reconstructed_b1
+        if not (c == d0 + d1 and a0 == reconstructed_a0 and b0 == reconstructed_b0 and a1 == reconstructed_a1 and b1 == reconstructed_b1):
+            return False
         
         return True
 
@@ -50,7 +46,7 @@ class Tallier(Party):
         super().__init__(index, n)
         self.m = m # Number of voters (dealers)
         self.n = n # Number of talliers (parties)
-        self.t = n//2-1
+        self.t = (n-1)//2
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, H)
@@ -83,9 +79,9 @@ class Tallier(Party):
         self.generate_accumulated_encrypted_vote()
         return self.reconstruct_accumulated_decrypted_vote(secret)
 
-    def store_encrypted_shares_and_proof(self, encrypted_shares_per_party, dealer_proofs):
-        self.dealer_proofs = dealer_proofs
-        self.encrypted_shares = encrypted_shares_per_party
+    def store_encrypted_shares_and_proofs(self, encrypted_shares_per_dealer, dealer_proofs_per_dealer):
+        self.dealer_proofs = dealer_proofs_per_dealer
+        self.encrypted_shares = encrypted_shares_per_dealer
 
     def store_decrypted_shares_and_proofs(self, decrypted_shares_and_proof):
         self.decrypted_shares_and_proof = decrypted_shares_and_proof
@@ -104,12 +100,12 @@ class Tallier(Party):
             reconstructed_gen_eval_str = ""
             enc_eval_str = ""
 
-            for i in range(self.n):
-                enc_eval_str += str(encrypted_shares[i]) + str(",")
-                for j in range(self.t):
-                        reconstructed_gen_evals[i] += fast_multiply((i+1)^j, commitments[j])
+            for k in range(self.n):
+                enc_eval_str += str(encrypted_shares[k]) + str(",")
+                for j in range(self.t+1):
+                        reconstructed_gen_evals[k] += fast_multiply((k+1)^j, commitments[j])
                         
-                reconstructed_gen_eval_str += str(reconstructed_gen_evals[i]) + str(",")
+                reconstructed_gen_eval_str += str(reconstructed_gen_evals[k]) + str(",")
             
             enc_eval_str = enc_eval_str[:-1]
             reconstructed_gen_eval_str = reconstructed_gen_eval_str[:-1]
@@ -117,9 +113,9 @@ class Tallier(Party):
             reconstructed_a1_str = ""
             reconstructed_a2_str = ""
 
-            for i in range(self.n):
-                reconstructed_a1_str += str(fast_multiply(r_list[i], G) + fast_multiply(c, reconstructed_gen_evals[i])) + str(",")
-                reconstructed_a2_str += str(fast_multiply(r_list[i], self.public_keys[i]) + fast_multiply(c, encrypted_shares[i])) + str(",")
+            for k in range(self.n):
+                reconstructed_a1_str += str(fast_multiply(r_list[k], G) + fast_multiply(c, reconstructed_gen_evals[k])) + str(",")
+                reconstructed_a2_str += str(fast_multiply(r_list[k], self.public_keys[k]) + fast_multiply(c, encrypted_shares[k])) + str(",")
             
             reconstructed_a1_str = reconstructed_a1_str[:-1]
             reconstructed_a2_str = reconstructed_a2_str[:-1]
@@ -185,7 +181,6 @@ class Voter(Dealer):
         w = Zq.random_element()
 
         if self.vote == 0:
-            print("vote is 0")
             a0 = fast_multiply(w, G)
             b0 = fast_multiply(w, H)
 
@@ -194,7 +189,6 @@ class Voter(Dealer):
             a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
             b1 = fast_multiply(r1, H) + fast_multiply(d1, self.encrypted_vote - fast_multiply(1, H))
         elif self.vote == 1:
-            print("vote is 1")
             a1 = fast_multiply(w, G)
             b1 = fast_multiply(w, H)
 
