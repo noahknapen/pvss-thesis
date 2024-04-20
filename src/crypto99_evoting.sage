@@ -125,13 +125,12 @@ class Tallier(Party):
             return c == reconstructed_c
         
     def generate_accumulated_encrypted_shares(self):
-        self.acc_shares = [0 for _ in range(self.m)]
-        for m_i in range(len(self.encrypted_shares)):
-            for n_i in range(len(self.encrypted_shares[m_i])):
-                self.acc_shares[m_i] += self.encrypted_shares[m_i][n_i]
+        acc_shares = [0 for _ in range(self.n)]
+        for i in range(self.n):
+            for j in range(self.m):
+                acc_shares[i] += self.encrypted_shares[j][i]
         
-        self.encrypted_shares = self.acc_shares
-
+        self.encrypted_shares = acc_shares
 
     def generate_accumulated_encrypted_vote(self):
         acc_vote = E(0)
@@ -144,10 +143,11 @@ class Tallier(Party):
     def reconstruct_accumulated_decrypted_vote(self, secret):
 
         for vote_tryout in range(self.m+1):
+            print("vote tryout: ", vote_tryout)
             if self.acc_vote - secret == fast_multiply(vote_tryout, H):
                 return vote_tryout
         
-        return False
+        return "Failure"
 
 
 class Voter(Dealer):
@@ -170,7 +170,8 @@ class Voter(Dealer):
         return self.encrypted_vote, self.vote_proof
 
     def generate_vote(self):
-        self.vote = Zq(Zv.random_element())
+        # self.vote = Zq(Zv.random_element())
+        self.vote = Zq(1)
         s = self.f(x=0)
         self.encrypted_vote = fast_multiply(s+self.vote, H)
 
