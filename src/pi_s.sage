@@ -2,8 +2,8 @@ from hashlib import sha256
 from time import time
 import os
 
-os.system('sage --preparse GeneralPVSSEd25519.sage')
-os.system('mv GeneralPVSSEd25519.sage.py GeneralPVSSEd25519.py')
+os.system('sage --preparse ../lib/GeneralPVSSEd25519.sage')
+os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
 
 from GeneralPVSSEd25519 import *
 
@@ -241,4 +241,4 @@ def pi_s_stages(n):
     print("Total reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
 
 n = 33 #! n should be odd in majority honest setting
-pi_s_stages(n)
+#pi_s_stages(n)

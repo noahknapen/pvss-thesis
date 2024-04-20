@@ -1,5 +1,3 @@
-from hashlib import sha256
-from time import time
 import os
 
 os.system('sage --preparse ../src/crypto99.sage')
