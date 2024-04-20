@@ -2,8 +2,8 @@ from hashlib import sha256
 from time import time
 import os
 
-os.system('sage --preparse GeneralPVSSEd25519.sage')
-os.system('mv GeneralPVSSEd25519.sage.py GeneralPVSSEd25519.py')
+os.system('sage --preparse ../lib/GeneralPVSSEd25519.sage')
+os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
 
 from GeneralPVSSEd25519 import *
 
@@ -283,4 +283,4 @@ def crypto99_stages(n):
 
 
 n = 33
-crypto99_stages(n)
+#crypto99_stages(n)

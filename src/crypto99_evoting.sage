@@ -2,8 +2,8 @@ from hashlib import sha256
 from time import time
 import os
 
-os.system('sage --preparse GeneralPVSSEd25519.sage')
-os.system('mv GeneralPVSSEd25519.sage.py GeneralPVSSEd25519.py')
+os.system('sage --preparse ../lib/GeneralPVSSEd25519.sage')
+os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
 
 from GeneralPVSSEd25519 import *
 
@@ -15,9 +15,8 @@ from crypto99 import *
 Zv = Integers(1)
 
 class BulletinBoard:
-    def verify_adapted_dleqs(self, encrypted_votes_and_proofs):
+    def verify_adapted_dleqs(self, C0, encrypted_votes_and_proofs):
         for enc_vote_and_proof in encrypted_votes_and_proofs:
-            C0 = self.commitments[0]
             U = enc_vote_and_proof[0]
             args = enc_vote_and_proof[1]
             a0 = args[0]
@@ -228,7 +227,3 @@ for i in range(m):
 
 b = BulletinBoard()
 b.verify_adapted_dleqs(enc_votes, vote_proofs)
-
-
-
-# Distribution protocol with v element of {0,1} and s a random secret value and computing value U = g^(s+v)
