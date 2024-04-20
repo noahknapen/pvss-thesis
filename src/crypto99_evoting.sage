@@ -7,18 +7,18 @@ os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
 
 from GeneralPVSSEd25519 import *
 
-os.system('sage --preparse crypto99.sage')
-os.system('mv crypto99.sage.py crypto99.py')
+os.system('sage --preparse ../src/crypto99.sage')
+os.system('mv ../src/crypto99.sage.py ./src_crypto99.py')
 
-from crypto99 import *
+from src_crypto99 import *
 
-Zv = Integers(1)
+Zv = Integers(2)
 
 class BulletinBoard:
-    def verify_adapted_dleqs(self, C0, encrypted_votes_and_proofs):
-        for enc_vote_and_proof in encrypted_votes_and_proofs:
-            U = enc_vote_and_proof[0]
-            args = enc_vote_and_proof[1]
+    def verify_adapted_dleqs(self, C0, encrypted_votes, proofs):
+        for i in range(len(encrypted_votes)):
+            U = encrypted_votes[i]
+            args = proofs[i]
             a0 = args[0]
             b0 = args[1]
             a1 = args[2]
@@ -29,8 +29,18 @@ class BulletinBoard:
             d1 = args[7]
             r1 = args[8]
 
-        if not (c == d0 + d1 and a0 == fast_multiply(r0, G) + fast_multiply(d0, C0) and b0 == fast_multiply(r0, H) + fast_multiply(d0, U) and a1 == fast_multiply(r1, G) + fast_multiply(d1, C0) and b1 == fast_multiply(r1, H) + fast_multiply(d1, U - H)):
-            return False
+            reconstructed_a0 = fast_multiply(r0, G) + fast_multiply(d0, C0)
+            reconstructed_b0 = fast_multiply(r0, H) + fast_multiply(d0, U)
+            reconstructed_a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
+            reconstructed_b1 = fast_multiply(r1, H) + fast_multiply(d1, U - H)
+
+        #if not (c == d0 + d1 and a0 == reconstructed_a0 and b0 == reconstructed_b0 and a1 == reconstructed_a1 and b1 == reconstructed_b1):
+        #    return False
+        assert c == d0 + d1
+        assert a0 == reconstructed_a0
+        assert b0 == reconstructed_b0
+        assert a1 == reconstructed_a1
+        assert b1 == reconstructed_b1
         
         return True
 
@@ -158,13 +168,13 @@ class Voter(Dealer):
         self.dleq_pol()
         self.generate_vote()
         self.dleq_vote()
-        return [self.commitments, self.encrypted_shares, self.proof, self.vote, self.vote_proof]
+        return [self.commitments, self.encrypted_shares, self.proof, self.encrypted_vote, self.vote_proof]
 
     def broadcast_vote_and_proof(self):
         return self.encrypted_vote, self.vote_proof
 
     def generate_vote(self):
-        self.vote = Zv.random_element()
+        self.vote = Zq(Zv.random_element())
         s = self.f(x=0)
         self.encrypted_vote = fast_multiply(s+self.vote, H)
 
@@ -175,23 +185,25 @@ class Voter(Dealer):
         w = Zq.random_element()
 
         if self.vote == 0:
+            print("vote is 0")
             a0 = fast_multiply(w, G)
             b0 = fast_multiply(w, H)
 
             r1 = Zq.random_element()
             d1 = Zq.random_element()
             a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
-            b1 = fast_multiply(r1, H) + fast_multiply(d1, self.encrypted_vote - fast_multiply(1-self.vote, H))
+            b1 = fast_multiply(r1, H) + fast_multiply(d1, self.encrypted_vote - fast_multiply(1, H))
         elif self.vote == 1:
+            print("vote is 1")
             a1 = fast_multiply(w, G)
             b1 = fast_multiply(w, H)
 
             r0 = Zq.random_element()
             d0 = Zq.random_element()
             a0 = fast_multiply(r0, G) + fast_multiply(d0, C0)
-            b0 = fast_multiply(r0, H) + fast_multiply(d0, self.encrypted_vote - fast_multiply(1-self.vote, H))
+            b0 = fast_multiply(r0, H) + fast_multiply(d0, self.encrypted_vote)  #! fast_multiply(0, H) is not 1. Is that normal?
         
-        c = Integer(Zq(int(sha256(str(C0) + str(U) + str(a0) + str(b0) + str(a1) + str(b1).encode()).hexdigest(), 16)))
+        c = Integer(Zq(int(sha256((str(C0) + str(self.encrypted_vote) + str(a0) + str(b0) + str(a1) + str(b1)).encode()).hexdigest(), 16)))
 
         if self.vote == 0:
             d0 = c - d1
@@ -201,29 +213,3 @@ class Voter(Dealer):
             r1 = w - s*d1
         
         self.vote_proof = [a0, b0, a1, b1, c, d0, r0, d1, r1]
-
-
-m = 8 # Number of voters (dealers)
-n = 8 # Number of talliers (parties)
-public_keys = [0 for _ in range(m)]
-parties = [0 for _ in range(n)]
-dealers = [0 for _ in range(m)]
-enc_shares = [0 for _ in range(m)]
-enc_votes = [0 for _ in range(m)]
-vote_proofs = [0 for _ in range(m)]
-
-for i in range(1,n+1):
-    p = Tallier(i, n)
-    parties[i-1] = p
-    public_keys[i-1] = p.broadcast_public_key()
-
-for i in range(m):
-    d = Voter(public_keys, n)
-    dealers[i] = d
-    [commitments, encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
-    enc_shares[i] = encrypted_shares
-    enc_votes[i] = encrypted_vote
-    vote_proofs[i] = vote_proof
-
-b = BulletinBoard()
-b.verify_adapted_dleqs(enc_votes, vote_proofs)
