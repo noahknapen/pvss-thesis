@@ -5,8 +5,17 @@ os.system('mv ../src/crypto99_evoting.sage.py ./src_crypto99_evoting.py')
 
 from src_crypto99_evoting import *
 
+#############
+# Variables #
+#############
+
 m = 2 # Number of voters (dealers)
 n = 9 # Number of talliers (parties)
+
+#########################
+# Crypto99 PVSS evoting #
+#########################
+
 public_keys = [0 for _ in range(n)]
 parties = [0 for _ in range(n)]
 dealers = [0 for _ in range(m)]
