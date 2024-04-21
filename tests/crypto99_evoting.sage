@@ -5,7 +5,7 @@ os.system('mv ../src/crypto99_evoting.sage.py ./src_crypto99_evoting.py')
 
 from src_crypto99_evoting import *
 
-m = 1 # Number of voters (dealers)
+m = 2 # Number of voters (dealers)
 n = 9 # Number of talliers (parties)
 public_keys = [0 for _ in range(n)]
 parties = [0 for _ in range(n)]
@@ -18,6 +18,10 @@ enc_votes = [0 for _ in range(m)]
 vote_proofs = [0 for _ in range(m)]
 dec_shares_and_proofs = [0 for _ in range(n)]
 b = BulletinBoard()
+
+print("------------------------")
+print("Starting crypto99 PVSS evoting tests")
+print("------------------------")
 
 for i in range(1,n+1):
     p = Tallier(i, m, n)
@@ -35,7 +39,11 @@ for i in range(m):
     enc_votes[i] = encrypted_vote
     vote_proofs[i] = vote_proof
 
-    assert b.verify_adapted_dleqs(temp_commitments[0], enc_votes, vote_proofs)
+    assert b.verify_adapted_dleqs(temp_commitments[0], encrypted_vote, vote_proof)
+
+print("----------------------------------------------------")
+print("Bulletinboard verification of vote proofs successful")
+print("----------------------------------------------------")
 
 for i in range(n):
     p = parties[i]
@@ -46,13 +54,17 @@ for i in range(n):
 
     assert p.verify_encrypted_shares()
 
+print("---------------------------------------------")
+print("Party encrypted share verification successful")
+print("---------------------------------------------")
+
 for i in range(n):
     p = parties[i]
     p.generate_accumulated_encrypted_shares()
     p.generate_decrypted_share()
     p.dleq_share()
     dec_shares_and_proofs[i] = [p.decrypted_share, p.share_proof]
-    assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.decrypted_share) #TODO: This assertion will fail if there is more than 1 voter. Adapt this.
+    assert p.encrypted_shares[p.index-1] == fast_multiply(p.secret_key, p.decrypted_share)
 
 for i in range(n):
     p = parties[i]
@@ -65,9 +77,15 @@ for i in range(n):
     
     secret = p.reconstruct_secret()
     p.generate_accumulated_encrypted_vote()
-    assert secret == fast_multiply(d.f(x=0), H) #TODO: This assertion will fail if there is more than 1 voter. Adapt this.
-    assert p.acc_vote == fast_multiply(secret_vote+d.f(x=0), H) #TODO: This assertion will fail if there is more than 1 voter. Adapt this.
+    assert secret == fast_multiply(sum([d.f(x=0) for d in dealers]), H)
+    assert p.acc_vote == fast_multiply(secret_vote+sum([d.f(x=0) for d in dealers]), H)
     assert p.acc_vote - secret == fast_multiply(secret_vote, H)
-    assert fast_multiply(0, H) == fast_multiply(1, H) #! This gives a serious problem
+    assert fast_multiply(0, H) == fast_multiply(1, H) #! This gives a serious problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     reconstructed_vote = p.reconstruct_accumulated_decrypted_vote(secret)
     assert reconstructed_vote == secret_vote
+
+print("--------------------------------------")
+print("Vote tallying successful")
+print("--------------------------------------")
+
+print("All tests successful")

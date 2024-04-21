@@ -16,24 +16,21 @@ from src_crypto99 import *
 Zv = Integers(2)
 
 class BulletinBoard:
-    def verify_adapted_dleqs(self, C0, encrypted_votes, proofs):
-        for i in range(len(encrypted_votes)):
-            U = encrypted_votes[i]
-            args = proofs[i]
-            a0 = args[0]
-            b0 = args[1]
-            a1 = args[2]
-            b1 = args[3]
-            c = args[4]
-            d0 = args[5]
-            r0 = args[6]
-            d1 = args[7]
-            r1 = args[8]
+    def verify_adapted_dleqs(self, C0, encrypted_vote, proof):
+        a0 = proof[0]
+        b0 = proof[1]
+        a1 = proof[2]
+        b1 = proof[3]
+        c = proof[4]
+        d0 = proof[5]
+        r0 = proof[6]
+        d1 = proof[7]
+        r1 = proof[8]
 
-            reconstructed_a0 = fast_multiply(r0, G) + fast_multiply(d0, C0)
-            reconstructed_b0 = fast_multiply(r0, H) + fast_multiply(d0, U)
-            reconstructed_a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
-            reconstructed_b1 = fast_multiply(r1, H) + fast_multiply(d1, U - H)
+        reconstructed_a0 = fast_multiply(r0, G) + fast_multiply(d0, C0)
+        reconstructed_b0 = fast_multiply(r0, H) + fast_multiply(d0, encrypted_vote)
+        reconstructed_a1 = fast_multiply(r1, G) + fast_multiply(d1, C0)
+        reconstructed_b1 = fast_multiply(r1, H) + fast_multiply(d1, encrypted_vote - H)
 
         if not (c == d0 + d1 and a0 == reconstructed_a0 and b0 == reconstructed_b0 and a1 == reconstructed_a1 and b1 == reconstructed_b1):
             return False
@@ -143,7 +140,6 @@ class Tallier(Party):
     def reconstruct_accumulated_decrypted_vote(self, secret):
 
         for vote_tryout in range(self.m+1):
-            print("vote tryout: ", vote_tryout)
             if self.acc_vote - secret == fast_multiply(vote_tryout, H):
                 return vote_tryout
         
@@ -170,8 +166,7 @@ class Voter(Dealer):
         return self.encrypted_vote, self.vote_proof
 
     def generate_vote(self):
-        # self.vote = Zq(Zv.random_element())
-        self.vote = Zq(1)
+        self.vote = Zq(Zv.random_element())
         s = self.f(x=0)
         self.encrypted_vote = fast_multiply(s+self.vote, H)
 
