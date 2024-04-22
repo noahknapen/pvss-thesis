@@ -2,8 +2,8 @@ from hashlib import sha256
 from time import time
 import os
 
-os.system('sage --preparse GeneralPVSSEd25519.sage')
-os.system('mv GeneralPVSSEd25519.sage.py GeneralPVSSEd25519.py')
+os.system('sage --preparse ../lib/GeneralPVSSEd25519.sage')
+os.system('mv ../lib/GeneralPVSSEd25519.sage.py ./GeneralPVSSEd25519.py')
 
 from GeneralPVSSEd25519 import *
 
@@ -55,6 +55,9 @@ class Party:
     def store_public_keys(self, public_keys):
         self.public_keys = public_keys
 
+    def store_commitments(self, commitments):
+        self.commitments = commitments
+
     def store_encrypted_shares_and_proof(self, encrypted_shares, dealer_proof):
         self.encrypted_shares = encrypted_shares # Assume shares are stored in order of party indices
         self.dealer_proof = dealer_proof
@@ -72,7 +75,7 @@ class Party:
         for i in range(self.n):
             expr += fast_multiply(orth_code[i], self.commitments[i])
         
-        return expr == fast_multiply(0, G)
+        return expr == G
     
     def verify_dleq_pol(self):
         self.commitments = self.dealer_proof[0]
@@ -207,6 +210,9 @@ class Dealer:
 
     def broadcast_share_and_proof(self):
         return self.encrypted_shares, self.proof
+    
+    def broadcast_commitments(self):
+        return self.commitments
 
     def generate_polynomial(self):
         f = RP.random_element(degree=self.t)
@@ -259,42 +265,3 @@ class Dealer:
             r_list[i] = w_list[i] - e*evals[i]
         
         self.proof = [self.commitments, e, r_list]
-
-def acns_stages(n):
-    public_keys = [0 for _ in range(n)]
-    parties = [0 for _ in range(n)]
-    decrypted_shares_and_proofs = [0 for _ in range(n)]
-
-    for i in range(1,n+1):
-        p = Party(i, n)
-        public_keys[i-1] = p.broadcast_public_key()
-        parties[i-1] = p
-    
-    dealer = Dealer(public_keys, n)
-    total_time_dealer = time()
-    [encrypted_shares, dealer_proof] = dealer.share_stage()
-    total_time_dealer = time() - total_time_dealer
-
-    total_time_party_verification = time()
-
-    for i in range(n):
-        p = parties[i]
-        decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
-    
-    total_time_party_verification = time() - total_time_party_verification
-    total_time_party_reconstruction = time()
-    
-    for i in range(n):
-        p = parties[i]
-        p.reconstruction_stage(decrypted_shares_and_proofs)
-    
-    total_time_party_reconstruction = time() - total_time_party_reconstruction
-
-    print("Total time for dealer: ", total_time_dealer, " seconds")
-    print("Total verification time for ", n, " parties: ", total_time_party_verification/n, " seconds")
-    print("Total reconstruction time for ", n, " parties: ", total_time_party_reconstruction/n, " seconds")
-
-n = 31
-# acns_stages(n)
-print(fast_multiply(Zq(0), G))
-print(fast_multiply(Zq(0), H))
