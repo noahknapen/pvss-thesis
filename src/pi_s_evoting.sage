@@ -96,23 +96,27 @@ class Tallier(Party):
     def verify_encrypted_shares(self):
         for i in range(len(self.encrypted_shares)):
             h0 = self.encrypted_shares[i][0]
-            self.encrypted_shares[i] = self.encrypted_shares[i][1:] #! h0 not longer necessary
+            self.encrypted_shares[i] = self.encrypted_shares[i][1:] #h0 not longer necessary
             encrypted_shares = self.encrypted_shares[i]
             d = self.dealer_proofs[i][0]
             z = self.dealer_proofs[i][1]
+
             temp_d1, temp_d2 = str(h0) + ",", ""
 
-            for i in range(self.n):
-                temp_d1 = temp_d1 + str(encrypted_shares[i])+str(",")
-                numerator = fast_multiply(z(x=i+1), self.public_keys[i]) 
-                denominator = fast_multiply(d, self.encrypted_shares[i])
+            for k in range(self.n):
+                temp_d1 = temp_d1 + str(encrypted_shares[k])+str(",")
+                numerator = fast_multiply(z(x=k+1), self.public_keys[k]) 
+                denominator = fast_multiply(d, encrypted_shares[k])
                 temp_d2 = temp_d2 + str(numerator - denominator)+str(",") 
             
             temp_d1 = temp_d1[:-1]
             temp_d2 = temp_d2[:-1]
             reconstructed_d = Integer(Zq(int(sha256((str(temp_d1)+str(temp_d2)).encode()).hexdigest(),16)))
 
-            return d == reconstructed_d 
+            if d != reconstructed_d:
+                return False
+        
+        return True
         
     def generate_accumulated_encrypted_shares(self):
         acc_shares = [0 for _ in range(self.n)]
@@ -168,7 +172,7 @@ class Voter(Dealer):
         temp_d1, temp_d2 = str(h0) + ",", ""
 
         for i in range(self.n):
-            temp_d1 = temp_d1 + str(self.encrypted_shares[i])+str(",") #! This is not appended so only takes the last result!!!!
+            temp_d1 = temp_d1 + str(self.encrypted_shares[i+1])+str(",") #! This is not appended so only takes the last result!!!!
             temp_d2 = temp_d2 + str(enc_r_evals[i])+str(",")
         
         temp_d1 = temp_d1[:-1]

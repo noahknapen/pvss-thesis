@@ -55,7 +55,7 @@ print("----------------------------------------------------")
 for i in range(n):
     p = parties[i]
     p.store_public_keys(public_keys)
-    p.store_encrypted_shares_and_proofs(enc_shares, dealer_proofs)
+    p.store_encrypted_shares_and_proofs(list(enc_shares), dealer_proofs) # Pass `enc_shares` by value since adapting this in one party, propagates to another otherwise
     p.store_encrypted_votes(enc_votes)
 
     assert p.verify_encrypted_shares()
