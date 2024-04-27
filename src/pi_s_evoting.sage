@@ -48,13 +48,12 @@ class BulletinBoard:
 
 class Tallier(Party):
     def __init__(self, index, m, n):
-        super().__init__(index, n)
         self.m = m # Number of voters (dealers)
         self.n = n # Number of talliers (parties)
         self.t = (n-1)//2
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
-        self.public_key = fast_multiply(self.secret_key, H)
+        self.public_key = fast_multiply(self.secret_key, G)
         self.public_keys = [0 for _ in range(self.n)]
         self.encrypted_shares = [[0 for _ in range(self.n)] for _ in range(self.m)]
         self.dealer_proofs = [[0,0] for _ in range(self.m)]

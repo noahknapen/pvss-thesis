@@ -83,10 +83,9 @@ for i in range(n):
     
     secret = p.reconstruct_secret()
     p.generate_accumulated_encrypted_vote()
-    assert secret == fast_multiply(sum([d.f(x=0) for d in dealers]), H)
-    assert p.acc_vote == fast_multiply(secret_vote+sum([d.f(x=0) for d in dealers]), H)
-    assert p.acc_vote - secret == fast_multiply(secret_vote, H)
-    assert fast_multiply(0, H) == fast_multiply(1, H) #! This gives a serious problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    assert secret == fast_multiply(sum([d.f(x=0) for d in dealers]), G)
+    assert p.acc_vote == fast_multiply(secret_vote+sum([d.f(x=0) for d in dealers]), G)
+    assert p.acc_vote - secret == fast_multiply(secret_vote, G)
     reconstructed_vote = p.reconstruct_accumulated_decrypted_vote(secret)
     assert reconstructed_vote == secret_vote
 
