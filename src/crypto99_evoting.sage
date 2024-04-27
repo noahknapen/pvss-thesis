@@ -119,7 +119,10 @@ class Tallier(Party):
 
             reconstructed_c = Integer(Zq(int(sha256(str(reconstructed_gen_eval_str + enc_eval_str + reconstructed_a1_str + reconstructed_a2_str).encode()).hexdigest(), 16)))
 
-            return c == reconstructed_c
+            if c != reconstructed_c:
+                return False
+        
+        return True
         
     def generate_accumulated_encrypted_shares(self):
         acc_shares = [0 for _ in range(self.n)]
