@@ -3,7 +3,7 @@ import os
 os.system('sage --preparse ../src/pi_s_evoting.sage')
 os.system('mv ../src/pi_s_evoting.sage.py ./src_pi_s_evoting.py')
 
-from src_crypto99_evoting import *
+from src_pi_s_evoting import *
 
 #############
 # Variables #
