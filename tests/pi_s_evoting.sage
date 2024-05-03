@@ -9,7 +9,7 @@ from src_pi_s_evoting import *
 # Variables #
 #############
 
-m = 2 # Number of voters (dealers)
+m = 10 # Number of voters (dealers)
 n = 9 # Number of talliers (parties)
 
 #########################
@@ -85,7 +85,7 @@ for i in range(n):
     p.generate_accumulated_encrypted_vote()
     assert secret == fast_multiply(sum([d.f(x=0) for d in dealers]), G)
     assert p.acc_vote == fast_multiply(secret_vote+sum([d.f(x=0) for d in dealers]), G)
-    assert p.acc_vote - secret == fast_multiply(secret_vote, G) #! acc_vote is with H, but secret is with G so this cannot work, but it may be insecure to use G for all
+    assert p.acc_vote - secret == fast_multiply(secret_vote, G)
     reconstructed_vote = p.reconstruct_accumulated_decrypted_vote(secret)
     assert reconstructed_vote == secret_vote
 

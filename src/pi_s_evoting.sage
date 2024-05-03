@@ -13,9 +13,6 @@ os.system('mv ../src/pi_s.sage.py ./src_pi_s.py')
 from src_pi_s import *
 
 Zv = Integers(2)
-K = E.random_point() #? May K be shared between Voters? Or has this to be a new generator per Voter?
-while K.order() != q:
-    K = E.random_point()
 
 class BulletinBoard:
     def verify_adapted_dleqs(self, C0, encrypted_vote, proof):
@@ -29,16 +26,10 @@ class BulletinBoard:
         d1 = proof[7]
         r1 = proof[8]
 
-        reconstructed_a0 = fast_multiply(r0, K) + fast_multiply(d0, C0)
-        reconstructed_b0 = fast_multiply(r0, H) + fast_multiply(d0, encrypted_vote)
-        reconstructed_a1 = fast_multiply(r1, K) + fast_multiply(d1, C0)
-        reconstructed_b1 = fast_multiply(r1, H) + fast_multiply(d1, encrypted_vote - H)
-
-        assert c == d0+d1
-        assert a0 == reconstructed_a0
-        assert a1 == reconstructed_a1
-        assert b0 == reconstructed_b0
-        assert b1 == reconstructed_b1
+        reconstructed_a0 = fast_multiply(r0, H) + fast_multiply(d0, C0)
+        reconstructed_b0 = fast_multiply(r0, G) + fast_multiply(d0, encrypted_vote)
+        reconstructed_a1 = fast_multiply(r1, H) + fast_multiply(d1, C0)
+        reconstructed_b1 = fast_multiply(r1, G) + fast_multiply(d1, encrypted_vote - G)
 
         if not (c == d0 + d1 and a0 == reconstructed_a0 and b0 == reconstructed_b0 and a1 == reconstructed_a1 and b1 == reconstructed_b1):
             return False
@@ -136,7 +127,7 @@ class Tallier(Party):
     def reconstruct_accumulated_decrypted_vote(self, secret):
 
         for vote_tryout in range(self.m+1):
-            if self.acc_vote - secret == fast_multiply(vote_tryout, H):
+            if self.acc_vote - secret == fast_multiply(vote_tryout, G):
                 return vote_tryout
         
         return "Failure"
@@ -161,8 +152,8 @@ class Voter(Dealer):
         return [self.encrypted_shares, self.proof, self.encrypted_vote, self.vote_proof]
     
     def dleq_pol(self):
-        h0 = fast_multiply(self.f(x=0), K)
-        self.encrypted_shares.insert(0, h0) #? h0 could also be generated in dleq_vote, but I guess it is needed here to verify that it is also an evaluation of the same polynomial?
+        h0 = fast_multiply(self.f(x=0), H)
+        self.encrypted_shares.insert(0, h0)
 
         r = RP.random_element(degree=self.t)
         self.temp_random_element = r(x=0)
@@ -187,7 +178,7 @@ class Voter(Dealer):
     def generate_vote(self):
         self.vote = Zq(Zv.random_element())
         s = self.f(x=0)
-        self.encrypted_vote = fast_multiply(s+self.vote, H)
+        self.encrypted_vote = fast_multiply(s+self.vote, G)
 
     # Proof for value U, showing that v element of 0 or 1 by showing: log_H(U) = log_G(G^global_secret) or log_H(U) = 1 + log_G(G^global_secret) 
     def dleq_vote(self):
@@ -195,21 +186,21 @@ class Voter(Dealer):
         w = self.temp_random_element
 
         if self.vote == 0:
-            a0 = fast_multiply(w, K)
-            b0 = fast_multiply(w, H)
+            a0 = fast_multiply(w, H)
+            b0 = fast_multiply(w, G)
 
             r1 = Zq.random_element()
             d1 = Zq.random_element()
-            a1 = fast_multiply(r1, K) + fast_multiply(d1, self.encrypted_shares[0])
-            b1 = fast_multiply(r1, H) + fast_multiply(d1, self.encrypted_vote - fast_multiply(1, H))
+            a1 = fast_multiply(r1, H) + fast_multiply(d1, self.encrypted_shares[0])
+            b1 = fast_multiply(r1, G) + fast_multiply(d1, self.encrypted_vote - fast_multiply(1, G))
         elif self.vote == 1:
-            a1 = fast_multiply(w, K)
-            b1 = fast_multiply(w, H)
+            a1 = fast_multiply(w, H)
+            b1 = fast_multiply(w, G)
 
             r0 = Zq.random_element()
             d0 = Zq.random_element()
-            a0 = fast_multiply(r0, K) + fast_multiply(d0, self.encrypted_shares[0])
-            b0 = fast_multiply(r0, H) + fast_multiply(d0, self.encrypted_vote)  #! fast_multiply(0, H) is not 1. Is that normal?
+            a0 = fast_multiply(r0, H) + fast_multiply(d0, self.encrypted_shares[0])
+            b0 = fast_multiply(r0, G) + fast_multiply(d0, self.encrypted_vote)  #! fast_multiply(0, H) is not 1. Is that normal?
         
         c = Integer(Zq(int(sha256((str(self.encrypted_vote) + str(a0) + str(b0) + str(a1) + str(b1)).encode()).hexdigest(), 16)))
 
