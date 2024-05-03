@@ -12,6 +12,7 @@ from crypto99 import *
 
 class ComparisonMetric:
     def __init__(self):
+        # Take powers of 2 values
         pi_s1 = Pi_s_Metrics(9)
         pi_s2 = Pi_s_Metrics(33)
         pi_s3 = Pi_s_Metrics(65)

@@ -67,7 +67,9 @@ class Party:
 
     def verify_encrypted_shares(self):
         if not self.verify_dleq_pol():
+            print("verify_dleq_pol failed")
             return False
+        print("verify_dleq_pol passed")
 
         orth_code = self.generate_orth_code()
         expr = 0
@@ -75,6 +77,7 @@ class Party:
         for i in range(self.n):
             expr += fast_multiply(orth_code[i], self.commitments[i])
         
+        print("checking...")
         return expr == G
     
     def verify_dleq_pol(self):
@@ -112,10 +115,10 @@ class Party:
             if j != i:
                 lambda_i *= 1/(Zq(i)-Zq(j))
         
-        return lambda_i
+        return Zq(lambda_i)
     
     def generate_orth_code(self):
-        f = RP.random_element(degree=self.n-self.t-1)
+        f = RP.random_element(degree=self.n-self.t-2)
         evals = [f(x=i) for i in range(1, self.n+1)]
         return [self.orth_coeff(i)*evals[i] for i in range(self.n)]
 
