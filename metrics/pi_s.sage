@@ -9,7 +9,7 @@ from src_pi_s import *
 # Variables #
 #############
 
-n = 33 # Number of parties #! n should be odd in majority honest setting
+#n = 33 # Number of parties #! n should be odd in majority honest setting
 
 #############
 # pi_s PVSS #
@@ -17,6 +17,8 @@ n = 33 # Number of parties #! n should be odd in majority honest setting
 
 class Pi_s_Metrics:
     def __init__(self, n):
+        self.n = n
+        self.t = (n-1)//2
         public_keys = [0 for _ in range(n)]
         parties = [0 for _ in range(n)]
         decrypted_shares_and_proofs = [0 for _ in range(n)]
@@ -48,9 +50,9 @@ class Pi_s_Metrics:
 
         self.total_time_party_reconstruction = time() - self.total_time_party_reconstruction
 
-        print("Total time for dealer: ", self.total_time_dealer, " seconds")
-        print("Total verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
-        print("Total reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
+        print("Average time for dealer: ", self.total_time_dealer, " seconds")
+        print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
+        print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
 
 
-metrics = Pi_s_Metrics(n)
+#metrics = Pi_s_Metrics(n)
