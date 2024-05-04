@@ -46,13 +46,13 @@ class Pi_sEvotingMetrics:
             b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
             self.vote_verification_time += time() - temp_time2
 
-        self.tally_verification_time = 0
+        self.share_verification_time = 0
         
         for i in range(n):
             p = parties[i]
             temp_time = time()
             dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
-            self.tally_verification_time += time() - temp_time
+            self.share_verification_time += time() - temp_time
 
         self.tally_reconstruction_time = 0
         
@@ -64,5 +64,5 @@ class Pi_sEvotingMetrics:
 
         print("Total time for ballot casting: ", self.casting_time, " seconds")
         print("Average vote verification time for ", self.m, " voters: ", self.vote_verification_time/m, " seconds")
-        print("Average share verification time for ", self.n, " talliers: ", self.tally_verification_time/n, " seconds")
+        print("Average share verification time for ", self.n, " talliers: ", self.share_verification_time/n, " seconds")
         print("Average vote tallying time for ", self.t+1, " talliers: ", self.tally_reconstruction_time/(self.t+1), " seconds")
