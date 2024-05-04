@@ -56,7 +56,7 @@ class Tallier(Party):
 
     def verification_stage(self, public_keys, encrypted_shares, dealer_proof, encrypted_votes):
         self.store_public_keys(public_keys)
-        self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
+        self.store_encrypted_shares_and_proofs(encrypted_shares, dealer_proof)
         self.store_encrypted_votes(encrypted_votes)
 
         if self.verify_encrypted_shares():
