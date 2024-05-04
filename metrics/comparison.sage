@@ -19,7 +19,7 @@ from crypto99_evoting import *
 
 
 class ComparisonMetric:
-    def fixed_talliers_evoting_pvss_schemes(self):
+    def fixed_talliers_evoting_pvss_schemes():
         pi_s1 = Pi_sEvotingMetrics(9, 9)
         pi_s2 = Pi_sEvotingMetrics(17, 9)
         pi_s3 = Pi_sEvotingMetrics(33, 9)
@@ -47,7 +47,7 @@ class ComparisonMetric:
         k += list_plot(list(zip([9, 17, 33, 65], [crypto_1.tally_verification_time/9, crypto_2.tally_verification_time/17, crypto_3.tally_verification_time/33, crypto_4.tally_verification_time/65, crypto_5.tally_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Tally verification stage', color='red', marker='s')
         k.show()
 
-    def fixed_voters_evoting_pvss_schemes(self):
+    def fixed_voters_evoting_pvss_schemes():
         pi_s1 = Pi_sEvotingMetrics(9, 9)
         pi_s2 = Pi_sEvotingMetrics(9, 17)
         pi_s3 = Pi_sEvotingMetrics(9, 33)
@@ -105,4 +105,6 @@ class ComparisonMetric:
         k.show()
 
 
-ComparisonMetric.base_pvss_schemes() 
+ComparisonMetric.fixed_talliers_evoting_pvss_schemes()
+# ComparisonMetric.fixed_voters_evoting_pvss_schemes()
+# ComparisonMetric.base_pvss_schemes() 

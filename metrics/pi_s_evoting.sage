@@ -64,5 +64,5 @@ class Pi_sEvotingMetrics:
 
         print("Total time for ballot casting: ", self.casting_time, " seconds")
         print("Average vote verification time for ", self.m, " voters: ", self.vote_verification_time/m, " seconds")
-        print("Average share verification time for ", self.n, " parties: ", self.tally_verification_time/n, " seconds")
-        print("Average vote tallying time for ", self.t+1, " parties: ", self.tally_reconstruction_time/(self.t+1), " seconds")
+        print("Average share verification time for ", self.n, " talliers: ", self.tally_verification_time/n, " seconds")
+        print("Average vote tallying time for ", self.t+1, " talliers: ", self.tally_reconstruction_time/(self.t+1), " seconds")
