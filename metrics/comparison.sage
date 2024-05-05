@@ -33,23 +33,23 @@ class ComparisonMetric:
         crypto_5 = Crypto99EvotingMetrics(81, 9)
 
         g = Graphics()
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Casting stage', color='blue', marker='s')
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Casting stage', color='red', marker='s')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=5, legend_label='Pi_s', color='blue', marker='s', title='Casting stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=5, legend_label='Schoenmakers99', color='red', marker='s', title='Casting stage')
         g.show()
 
         h = Graphics()
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.vote_verification_time/9, pi_s2.vote_verification_time/17, pi_s3.vote_verification_time/33, pi_s4.vote_verification_time/65, pi_s5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote verification stage', color='blue', marker='s')
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.vote_verification_time/9, crypto_2.vote_verification_time/17, crypto_3.vote_verification_time/33, crypto_4.vote_verification_time/65, crypto_5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote verification stage', color='red', marker='s')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.vote_verification_time/9, pi_s2.vote_verification_time/17, pi_s3.vote_verification_time/33, pi_s4.vote_verification_time/65, pi_s5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.02, legend_label='Pi_s', color='blue', marker='s', title='Vote verification stage')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.vote_verification_time/9, crypto_2.vote_verification_time/17, crypto_3.vote_verification_time/33, crypto_4.vote_verification_time/65, crypto_5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.02, legend_label='Schoenmakers99', color='red', marker='s', title='Vote verification stage')
         h.show()
 
         k = Graphics()
-        k += list_plot(list(zip([9, 17, 33, 65], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/9, pi_s3.share_verification_time/9, pi_s4.share_verification_time/9, pi_s5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Share verification stage', color='blue', marker='s')
-        k += list_plot(list(zip([9, 17, 33, 65], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/9, crypto_3.share_verification_time/9, crypto_4.share_verification_time/9, crypto_5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Share verification stage', color='red', marker='s')
+        k += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/9, pi_s3.share_verification_time/9, pi_s4.share_verification_time/9, pi_s5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=4, legend_label='Pi_s', color='blue', marker='s', title='Share verification stage')
+        k += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/9, crypto_3.share_verification_time/9, crypto_4.share_verification_time/9, crypto_5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=4, legend_label='Schoenmakers99', color='red', marker='s', title='Share verification stage')
         k.show()
 
         l = Graphics()
-        l += list_plot(list(zip([pi_s1.t+1, pi_s2.t+1, pi_s3.t+1, pi_s4.t+1, pi_s5.t+1,], [pi_s1.tally_reconstruction_time/(pi_s1.t+1), pi_s2.tally_reconstruction_time/(pi_s2.t+1), pi_s3.tally_reconstruction_time/(pi_s3.t+1), pi_s4.tally_reconstruction_time/(pi_s4.t+1), pi_s5.tally_reconstruction_time/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote tallying stage', color='blue', marker='s')
-        l += list_plot(list(zip([crypto_1.t+1, crypto_2.t+1, crypto_3.t+1, crypto_4.t+1, crypto_5.t+1], [crypto_1.tally_reconstruction_time/(crypto_1.t+1), crypto_2.tally_reconstruction_time/(crypto_2.t+1), crypto_3.tally_reconstruction_time/(crypto_3.t+1), crypto_4.tally_reconstruction_time/(crypto_4.t+1), crypto_5.tally_reconstruction_time/(crypto_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote tallying stage', color='red', marker='s')
+        l += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.tally_reconstruction_time/(pi_s1.t+1), pi_s2.tally_reconstruction_time/(pi_s2.t+1), pi_s3.tally_reconstruction_time/(pi_s3.t+1), pi_s4.tally_reconstruction_time/(pi_s4.t+1), pi_s5.tally_reconstruction_time/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.1, legend_label='Pi_s', color='blue', marker='s', title='Vote tallying stage')
+        l += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.tally_reconstruction_time/(crypto_1.t+1), crypto_2.tally_reconstruction_time/(crypto_2.t+1), crypto_3.tally_reconstruction_time/(crypto_3.t+1), crypto_4.tally_reconstruction_time/(crypto_4.t+1), crypto_5.tally_reconstruction_time/(crypto_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.1, legend_label='Schoenmakers99', color='red', marker='s', title='Vote tallying stage')
         l.show()
 
     def fixed_voters_evoting_pvss_schemes():
@@ -66,24 +66,24 @@ class ComparisonMetric:
         crypto_5 = Crypto99EvotingMetrics(9, 81)
 
         g = Graphics()
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Casting stage', color='blue', marker='s')
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Casting stage', color='red', marker='s')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=5, legend_label='Pi_s', color='blue', marker='s', title='Casting stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=5, legend_label='Schoenmakers99', color='red', marker='s', title='Casting stage')
         g.show()
 
         h = Graphics()
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.vote_verification_time/9, pi_s2.vote_verification_time/17, pi_s3.vote_verification_time/33, pi_s4.vote_verification_time/65, pi_s5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote verification stage', color='blue', marker='s')
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.vote_verification_time/9, crypto_2.vote_verification_time/17, crypto_3.vote_verification_time/33, crypto_4.vote_verification_time/65, crypto_5.vote_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote verification stage', color='red', marker='s')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.vote_verification_time/9, pi_s2.vote_verification_time/9, pi_s3.vote_verification_time/9, pi_s4.vote_verification_time/9, pi_s5.vote_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.02, legend_label='Pi_s', color='blue', marker='s', title='Vote verification stage')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.vote_verification_time/9, crypto_2.vote_verification_time/9, crypto_3.vote_verification_time/9, crypto_4.vote_verification_time/9, crypto_5.vote_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.02, legend_label='Schoenmakers99', color='red', marker='s', title='Vote verification stage')
         h.show()
 
         k = Graphics()
-        k += list_plot(list(zip([9, 17, 33, 65], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/9, pi_s3.share_verification_time/9, pi_s4.share_verification_time/9, pi_s5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Share verification stage', color='blue', marker='s')
-        k += list_plot(list(zip([9, 17, 33, 65], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/9, crypto_3.share_verification_time/9, crypto_4.share_verification_time/9, crypto_5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Share verification stage', color='red', marker='s')
+        k += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/17, pi_s3.share_verification_time/33, pi_s4.share_verification_time/65, pi_s5.share_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=4, legend_label='Pi_s', color='blue', marker='s', title='Share verification stage')
+        k += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/17, crypto_3.share_verification_time/33, crypto_4.share_verification_time/65, crypto_5.share_verification_time/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=4, legend_label='Schoenmakers99', color='red', marker='s', title='Share verification stage')
         k.show()
 
         l = Graphics()
-        l += list_plot(list(zip([pi_s1.t+1, pi_s2.t+1, pi_s3.t+1, pi_s4.t+1, pi_s5.t+1,], [pi_s1.tally_reconstruction_time/(pi_s1.t+1), pi_s2.tally_reconstruction_time/(pi_s2.t+1), pi_s3.tally_reconstruction_time/(pi_s3.t+1), pi_s4.tally_reconstruction_time/(pi_s4.t+1), pi_s5.tally_reconstruction_time/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote tallying stage', color='blue', marker='s')
-        l += list_plot(list(zip([crypto_1.t+1, crypto_2.t+1, crypto_3.t+1, crypto_4.t+1, crypto_5.t+1], [crypto_1.tally_reconstruction_time/(crypto_1.t+1), crypto_2.tally_reconstruction_time/(crypto_2.t+1), crypto_3.tally_reconstruction_time/(crypto_3.t+1), crypto_4.tally_reconstruction_time/(crypto_4.t+1), crypto_5.tally_reconstruction_time/(crypto_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=1, legend_label='Vote tallying stage', color='red', marker='s')
-        l.show()        
+        l += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.tally_reconstruction_time/(pi_s1.t+1), pi_s2.tally_reconstruction_time/(pi_s2.t+1), pi_s3.tally_reconstruction_time/(pi_s3.t+1), pi_s4.tally_reconstruction_time/(pi_s4.t+1), pi_s5.tally_reconstruction_time/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.1, legend_label='Pi_s', color='blue', marker='s', title='Vote tallying stage')
+        l += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.tally_reconstruction_time/(crypto_1.t+1), crypto_2.tally_reconstruction_time/(crypto_2.t+1), crypto_3.tally_reconstruction_time/(crypto_3.t+1), crypto_4.tally_reconstruction_time/(crypto_4.t+1), crypto_5.tally_reconstruction_time/(crypto_5.t+1)])), plotjoined=True, xmin=81, xmax=10, ymin=0, ymax=0.1, legend_label='Schoenmakers99', color='red', marker='s', title='Vote tallying stage')
+        l.show()
 
     def base_pvss_schemes():
         # Take powers of 2 values
@@ -115,6 +115,6 @@ class ComparisonMetric:
         k.show()
 
 
-ComparisonMetric.fixed_talliers_evoting_pvss_schemes()
-# ComparisonMetric.fixed_voters_evoting_pvss_schemes()
+# ComparisonMetric.fixed_talliers_evoting_pvss_schemes()
+ComparisonMetric.fixed_voters_evoting_pvss_schemes()
 # ComparisonMetric.base_pvss_schemes() 
