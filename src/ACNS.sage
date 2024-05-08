@@ -67,9 +67,7 @@ class Party:
 
     def verify_encrypted_shares(self):
         if not self.verify_dleq_pol():
-            print("verify_dleq_pol failed")
             return False
-        print("verify_dleq_pol passed")
 
         orth_code = self.generate_orth_code()
         expr = 0

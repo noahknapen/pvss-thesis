@@ -15,6 +15,31 @@ n = 7 # Number of parties
 # ACNS PVSS #
 #################
 
+print("------------------------")
+print("Starting dual code tests")
+print("------------------------")
+
+k = 3
+p = RP.random_element(degree=k-1)
+pevals = [p(x) for x in range(1, n+1)]
+
+def orth_coeff(i):
+    lambda_i = Zq(1)
+    for j in range(1, n+1):
+        if j != i:
+            lambda_i *= 1/(Zq(i)-Zq(j))
+    
+    return Zq(lambda_i)
+
+f = RP.random_element(degree=n-k-1)
+fevals = [f(x) for x in range(1, n+1)]
+
+assert sum([orth_coeff(i)*fevals[i-1]*pevals[i-1] for i in range(1, n+1)]) == 0
+
+print("--------------------------")
+print("Dual code tests successful")
+print("--------------------------")
+
 public_keys = [0 for _ in range(n)]
 parties = [0 for _ in range(n)]
 decrypted_shares_and_proofs = [0 for _ in range(n)]
