@@ -9,8 +9,7 @@ from src_ACNS import *
 # Variables #
 #############
 
-n = 7 # Number of parties
-t = (n-1)//2
+n = 33 # Number of parties
 
 #################
 # ACNS PVSS #

@@ -142,7 +142,7 @@ class Party:
     def verify_decrypted_shares(self):
         self.valid_decrypted_shares = []
 
-        for i in range(self.t):
+        for i in range(self.t+1):
             if i == self.index-1:
                 self.valid_decrypted_shares.append(self.decrypted_share)
                 continue
