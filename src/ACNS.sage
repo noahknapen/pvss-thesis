@@ -75,8 +75,7 @@ class Party:
         for i in range(self.n):
             expr += fast_multiply(orth_code[i], self.commitments[i])
         
-        print("checking...")
-        return expr == G
+        return expr == E(0)
     
     def verify_dleq_pol(self):
         self.commitments = self.dealer_proof[0]
@@ -118,7 +117,7 @@ class Party:
     def generate_orth_code(self):
         f = RP.random_element(degree=self.n-self.t-2)
         evals = [f(x=i) for i in range(1, self.n+1)]
-        return [self.orth_coeff(i)*evals[i] for i in range(self.n)]
+        return [self.orth_coeff(i)*evals[i-1] for i in range(1, self.n+1)]
 
     def generate_decrypted_share(self):
         inv_priv_key = Integer(self.secret_key).inverse_mod(q)
