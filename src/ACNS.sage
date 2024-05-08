@@ -32,8 +32,9 @@ class Party:
         self.secret_key = Zq.random_element()
         self.public_key = fast_multiply(self.secret_key, H)
     
-    def verification_stage(self, public_keys, encrypted_shares, dealer_proof):
+    def verification_stage(self, public_keys, commitments, encrypted_shares, dealer_proof):
         self.store_public_keys(public_keys)
+        self.store_commitments(commitments)
         self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
 
         if (self.verify_encrypted_shares()):
@@ -206,7 +207,7 @@ class Dealer:
         self.generate_commitments()
         self.generate_encrypted_evals()
         self.dleq_pol()
-        return self.broadcast_share_and_proof()
+        return [self.commitments, self.encrypted_shares, self.proof]
 
     def broadcast_share_and_proof(self):
         return self.encrypted_shares, self.proof
