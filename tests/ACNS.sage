@@ -90,7 +90,7 @@ print("---------------------------------------------")
 for i in range(n):
     p = parties[i]
     reconstructed_secret = p.reconstruct_secret()
-    generator_secret = fast_multiply(dealer.f(x=0), H)
+    generator_secret = fast_multiply(dealer.f(x=0), G)
     assert generator_secret == reconstructed_secret
 
 print("--------------------------------------")

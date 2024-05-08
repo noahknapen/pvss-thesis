@@ -30,7 +30,7 @@ class Party:
         self.t = (n-1)//2 #! Honest majority setting and only odd n values
         self.index = index # Index is a number between 1 and n
         self.secret_key = Zq.random_element()
-        self.public_key = fast_multiply(self.secret_key, H)
+        self.public_key = fast_multiply(self.secret_key, G)
     
     def verification_stage(self, public_keys, commitments, encrypted_shares, dealer_proof):
         self.store_public_keys(public_keys)
@@ -97,7 +97,7 @@ class Party:
         reconstructed_a2_str = ""
 
         for i in range(self.n):
-            reconstructed_a1_str += str(fast_multiply(r_list[i], G) + fast_multiply(e, self.commitments[i])) + str(",")
+            reconstructed_a1_str += str(fast_multiply(r_list[i], H) + fast_multiply(e, self.commitments[i])) + str(",")
             reconstructed_a2_str += str(fast_multiply(r_list[i], self.public_keys[i]) + fast_multiply(e, self.encrypted_shares[i])) + str(",")
         
         reconstructed_a1_str = reconstructed_a1_str[:-1]
@@ -126,12 +126,12 @@ class Party:
 
     def dleq_share(self):
         # proof knowledge of a correct self.decrypted_share
-        # DLEQ(H, y_i=self.public_key, X_i=self.decrypted_share, Y_i=encrypted_shares[i])
+        # DLEQ(G, y_i=self.public_key, X_i=self.decrypted_share, Y_i=encrypted_shares[i])
         pub_key_str = str(self.public_key)
         enc_share_str = str(self.encrypted_shares[self.index-1])
         
         w = Zq.random_element()
-        a1_str = str(fast_multiply(w, H))
+        a1_str = str(fast_multiply(w, G))
         a2_str = str(fast_multiply(w, self.decrypted_share))
         
         # cryptographic hash of y_i and Y_i, a1 and a2
@@ -155,7 +155,7 @@ class Party:
 
             reconstructed_pub_key_str = str(self.public_keys[i])
             reconstructed_enc_share_str = str(self.encrypted_shares[i])
-            reconstructed_a1_str = str(fast_multiply(r, H) + fast_multiply(c, self.public_keys[i]))
+            reconstructed_a1_str = str(fast_multiply(r, G) + fast_multiply(c, self.public_keys[i]))
             reconstructed_a2_str = str(fast_multiply(r, decrypted_share) + fast_multiply(c, self.encrypted_shares[i]))
 
             reconstructed_c = Integer(Zq(int(sha256(str(reconstructed_pub_key_str + reconstructed_enc_share_str + reconstructed_a1_str + reconstructed_a2_str).encode()).hexdigest(), 16)))
@@ -225,7 +225,7 @@ class Dealer:
         self.commitments = []
 
         for i in range(self.n):
-            self.commitments.append(fast_multiply(evals[i], G))
+            self.commitments.append(fast_multiply(evals[i], H))
 
     def generate_encrypted_evals(self):
         evals = [self.f(x=i) for i in range(1, self.n+1)]
@@ -252,7 +252,7 @@ class Dealer:
             w_list[i] = w
             commitment_str += str(self.commitments[i]) + str(",")
             enc_eval_str += str(self.encrypted_shares[i]) + str(",")
-            a1_str += str(fast_multiply(w, G)) + str(",")
+            a1_str += str(fast_multiply(w, H)) + str(",")
             a2_str += str(fast_multiply(w, self.public_keys[i])) + str(",")
         
         commitment_str = commitment_str[:-1]

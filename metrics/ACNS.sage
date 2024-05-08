@@ -9,7 +9,7 @@ from src_ACNS import *
 # Variables #
 #############
 
-#n = 33 # Number of parties #! n should be odd in majority honest setting
+n = 33 # Number of parties #! n should be odd in majority honest setting
 
 #############
 # ACNS PVSS #
@@ -32,7 +32,7 @@ class ACNS_Metrics:
         self.total_time_dealer = time()
         [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
         self.total_time_dealer = time() - self.total_time_dealer
-        secret = fast_multiply(dealer.f(x=0), H)
+        secret = fast_multiply(dealer.f(x=0), G)
 
         self.total_time_party_verification = time()
 
@@ -54,4 +54,4 @@ class ACNS_Metrics:
         print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
         print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
 
-#metrics = ACNS_Metrics(n)
+metrics = ACNS_Metrics(n)
