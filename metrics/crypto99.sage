@@ -50,9 +50,11 @@ class Crypto99Metrics:
 
         self.total_time_party_reconstruction = time() - self.total_time_party_reconstruction
 
+        print("Schoenmakers99-------------------------------------------------")
         print("Total time for dealer: ", self.total_time_dealer, " seconds")
         print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds")
         print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds")
+        print("---------------------------------------------------------------")
 
 
 # metrics = Crypto99Metrics(n)

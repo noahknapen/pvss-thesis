@@ -62,7 +62,7 @@ class Pi_sEvotingMetrics:
             assert secret_vote == p.reconstruction_stage(dec_shares_and_proofs)
             self.tally_reconstruction_time += time() - temp_time
 
-        print("---------------------------------------------------------------")
+        print("pi_s evoting---------------------------------------------------")
         print("Total time for ballot casting: ", self.casting_time, " seconds")
         print("Average vote verification time for ", self.m, " voters: ", self.vote_verification_time/m, " seconds")
         print("Average share verification time for ", self.n, " talliers: ", self.share_verification_time/n, " seconds")

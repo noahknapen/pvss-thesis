@@ -15,7 +15,7 @@ n = 33 # Number of parties #! n should be odd in majority honest setting
 # ACNS PVSS #
 #############
 
-class ACNS_Metrics:
+class ACNSMetrics:
     def __init__(self, n):
         self.n = n
         self.t = (n-1)//2
@@ -50,8 +50,10 @@ class ACNS_Metrics:
 
         self.total_time_party_reconstruction = time() - self.total_time_party_reconstruction
 
+        print("ACNS-----------------------------------------------------------")
         print("Average time for dealer: ", self.total_time_dealer, " seconds")
         print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
         print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
+        print("---------------------------------------------------------------")
 
-metrics = ACNS_Metrics(n)
+#metrics = ACNSMetrics(n)

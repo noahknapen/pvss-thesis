@@ -6,6 +6,9 @@ os.system('mv pi_s.sage.py pi_s.py')
 os.system('sage --preparse crypto99.sage')
 os.system('mv crypto99.sage.py crypto99.py')
 
+os.system('sage --preparse ACNS.sage')
+os.system('mv ACNS.sage.py ACNS.py')
+
 os.system('sage --preparse pi_s_evoting.sage')
 os.system('mv pi_s_evoting.sage.py pi_s_evoting.py')
 
@@ -14,6 +17,7 @@ os.system('mv crypto99_evoting.sage.py crypto99_evoting.py')
 
 from pi_s import *
 from crypto99 import *
+from ACNS import *
 from pi_s_evoting import *
 from crypto99_evoting import *
 
@@ -99,19 +103,28 @@ class ComparisonMetric:
         crypto_4 = Crypto99Metrics(65)
         crypto_5 = Crypto99Metrics(81)
 
+        acns_1 = ACNSMetrics(9)
+        acns_2 = ACNSMetrics(17)
+        acns_3 = ACNSMetrics(33)
+        acns_4 = ACNSMetrics(65)
+        acns_5 = ACNSMetrics(81)
+
         g = Graphics()
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.total_time_dealer, pi_s2.total_time_dealer, pi_s3.total_time_dealer, pi_s4.total_time_dealer, pi_s5.total_time_dealer])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Sharing stage', color='blue', marker='s')
-        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.total_time_dealer, crypto_2.total_time_dealer, crypto_3.total_time_dealer, crypto_4.total_time_dealer, crypto_5.total_time_dealer])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Sharing stage', color='red', marker='s')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.total_time_dealer, pi_s2.total_time_dealer, pi_s3.total_time_dealer, pi_s4.total_time_dealer, pi_s5.total_time_dealer])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Pi_s stage', color='blue', marker='s', title='Sharing stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.total_time_dealer, crypto_2.total_time_dealer, crypto_3.total_time_dealer, crypto_4.total_time_dealer, crypto_5.total_time_dealer])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Schoenmakers99', color='red', marker='s', title='Sharing stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 81], [acns_1.total_time_dealer, acns_2.total_time_dealer, acns_3.total_time_dealer, acns_4.total_time_dealer, acns_5.total_time_dealer])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='ACNS', color='green', marker='s', title='Sharing stage')
         g.show()
 
         h = Graphics()
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.total_time_party_verification/9, pi_s2.total_time_party_verification/17, pi_s3.total_time_party_verification/33, pi_s4.total_time_party_verification/65, pi_s5.total_time_party_verification/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=2.1, legend_label='Verification stage', color='blue', marker='s')
-        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.total_time_party_verification/9, crypto_2.total_time_party_verification/17, crypto_3.total_time_party_verification/33, crypto_4.total_time_party_verification/65, crypto_5.total_time_party_verification/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=2.1, legend_label='Verification stage', color='red', marker='s')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [pi_s1.total_time_party_verification/9, pi_s2.total_time_party_verification/17, pi_s3.total_time_party_verification/33, pi_s4.total_time_party_verification/65, pi_s5.total_time_party_verification/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=2.1, legend_label='Pi_s', color='blue', marker='s', title='Verification stage')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [crypto_1.total_time_party_verification/9, crypto_2.total_time_party_verification/17, crypto_3.total_time_party_verification/33, crypto_4.total_time_party_verification/65, crypto_5.total_time_party_verification/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=2.1, legend_label='Schoenmakers99', color='red', marker='s', title='Verification stage')
+        h += list_plot(list(zip([9, 17, 33, 65, 81], [acns_1.total_time_party_verification/9, acns_2.total_time_party_verification/17, acns_3.total_time_party_verification/33, acns_4.total_time_party_verification/65, acns_5.total_time_party_verification/81])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=2.1, legend_label='ACNS', color='green', marker='s', title='Verification stage')
         h.show()
 
         k = Graphics()
-        k += list_plot(list(zip([pi_s1.t+1, pi_s2.t+1, pi_s3.t+1, pi_s4.t+1], [pi_s1.total_time_party_reconstruction/(pi_s1.t+1), pi_s2.total_time_party_reconstruction/(pi_s2.t+1), pi_s3.total_time_party_reconstruction/(pi_s3.t+1), pi_s4.total_time_party_reconstruction/(pi_s4.t+1), pi_s5.total_time_party_reconstruction/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Reconstruction stage', color='blue', marker='s')
-        k += list_plot(list(zip([crypto_1.t+1, crypto_2.t+1, crypto_3.t+1, crypto_4.t+1, crypto_5.t+1], [crypto_1.total_time_party_reconstruction/(crypto_1.t+1), crypto_2.total_time_party_reconstruction/(crypto_2.t+1), crypto_3.total_time_party_reconstruction/(crypto_3.t+1), crypto_4.total_time_party_reconstruction/(crypto_4.t+1), crypto_5.total_time_party_reconstruction/(crypto_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Reconstruction stage', color='red', marker='s')
+        k += list_plot(list(zip([pi_s1.t+1, pi_s2.t+1, pi_s3.t+1, pi_s4.t+1], [pi_s1.total_time_party_reconstruction/(pi_s1.t+1), pi_s2.total_time_party_reconstruction/(pi_s2.t+1), pi_s3.total_time_party_reconstruction/(pi_s3.t+1), pi_s4.total_time_party_reconstruction/(pi_s4.t+1), pi_s5.total_time_party_reconstruction/(pi_s5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Pi_s', color='blue', marker='s', title='Reconstruction stage')
+        k += list_plot(list(zip([crypto_1.t+1, crypto_2.t+1, crypto_3.t+1, crypto_4.t+1, crypto_5.t+1], [crypto_1.total_time_party_reconstruction/(crypto_1.t+1), crypto_2.total_time_party_reconstruction/(crypto_2.t+1), crypto_3.total_time_party_reconstruction/(crypto_3.t+1), crypto_4.total_time_party_reconstruction/(crypto_4.t+1), crypto_5.total_time_party_reconstruction/(crypto_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='Schoenmakers99', color='red', marker='s', title='Reconstruction stage')
+        k += list_plot(list(zip([acns_1.t+1, acns_2.t+1, acns_3.t+1, acns_4.t+1, acns_5.t+1], [acns_1.total_time_party_reconstruction/(acns_1.t+1), acns_2.total_time_party_reconstruction/(acns_2.t+1), acns_3.total_time_party_reconstruction/(acns_3.t+1), acns_4.total_time_party_reconstruction/(acns_4.t+1), acns_5.total_time_party_reconstruction/(acns_5.t+1)])), plotjoined=True, xmin=0, xmax=81, ymin=0, ymax=0.6, legend_label='ACNS', color='green', marker='s', title='Reconstruction stage')
         k.show()
 
 
