@@ -37,8 +37,8 @@ class ComparisonMetric:
         crypto_5 = Crypto99EvotingMetrics(129, 9)
 
         g = Graphics()
-        g += list_plot(list(zip([9, 17, 33, 65, 129], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=5, legend_label='Pi_s', color='blue', marker='s', title='Casting stage')
-        g += list_plot(list(zip([9, 17, 33, 65, 129], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=5, legend_label='Schoenmakers99', color='red', marker='s', title='Casting stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 129], [pi_s1.casting_time, pi_s2.casting_time, pi_s3.casting_time, pi_s4.casting_time, pi_s5.casting_time])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=7, legend_label='Pi_s', color='blue', marker='s', title='Casting stage')
+        g += list_plot(list(zip([9, 17, 33, 65, 129], [crypto_1.casting_time, crypto_2.casting_time, crypto_3.casting_time, crypto_4.casting_time, crypto_5.casting_time])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=7, legend_label='Schoenmakers99', color='red', marker='s', title='Casting stage')
         g.show()
 
         h = Graphics()
@@ -47,8 +47,8 @@ class ComparisonMetric:
         h.show()
 
         k = Graphics()
-        k += list_plot(list(zip([9, 17, 33, 65, 129], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/9, pi_s3.share_verification_time/9, pi_s4.share_verification_time/9, pi_s5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=4, legend_label='Pi_s', color='blue', marker='s', title='Share verification stage')
-        k += list_plot(list(zip([9, 17, 33, 65, 129], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/9, crypto_3.share_verification_time/9, crypto_4.share_verification_time/9, crypto_5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=4, legend_label='Schoenmakers99', color='red', marker='s', title='Share verification stage')
+        k += list_plot(list(zip([9, 17, 33, 65, 129], [pi_s1.share_verification_time/9, pi_s2.share_verification_time/9, pi_s3.share_verification_time/9, pi_s4.share_verification_time/9, pi_s5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=6, legend_label='Pi_s', color='blue', marker='s', title='Share verification stage')
+        k += list_plot(list(zip([9, 17, 33, 65, 129], [crypto_1.share_verification_time/9, crypto_2.share_verification_time/9, crypto_3.share_verification_time/9, crypto_4.share_verification_time/9, crypto_5.share_verification_time/9])), plotjoined=True, xmin=0, xmax=129, ymin=0, ymax=6, legend_label='Schoenmakers99', color='red', marker='s', title='Share verification stage')
         k.show()
 
         l = Graphics()
@@ -126,6 +126,6 @@ class ComparisonMetric:
         k.show()
 
 
-# ComparisonMetric.fixed_talliers_evoting_pvss_schemes()
-ComparisonMetric.fixed_voters_evoting_pvss_schemes()
+ComparisonMetric.fixed_talliers_evoting_pvss_schemes()
+# ComparisonMetric.fixed_voters_evoting_pvss_schemes()
 #ComparisonMetric.base_pvss_schemes() 
