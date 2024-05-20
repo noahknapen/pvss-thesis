@@ -9,7 +9,7 @@ from src_ACNS import *
 # Variables #
 #############
 
-n = 33 # Number of parties #! n should be odd in majority honest setting
+#n = 33 # Number of parties #! n should be odd in majority honest setting
 
 #############
 # ACNS PVSS #
