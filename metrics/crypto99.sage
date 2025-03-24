@@ -16,7 +16,7 @@ from src_crypto99 import *
 #################
 
 class Crypto99Metrics:
-    def __init__(self, n):
+    def run(self, n):
         self.n = n
         self.t = (n-1)//2
         public_keys = [0 for _ in range(n)]
