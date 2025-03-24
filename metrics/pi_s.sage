@@ -33,15 +33,14 @@ class Pi_s_Metrics:
         [encrypted_shares, dealer_proof] = dealer.share_stage()
         total_time_dealer = time() - total_time_dealer
 
-        total_time_party_verification = 0
-
         for i in range(n):
             p = parties[i]
             p.store_public_keys(public_keys)
             p.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
-            temp_time = time()
-            p.verify_encrypted_shares()
-            total_time_party_verification += (time() - temp_time)
+            if i == 0:
+                temp_time = time()
+                p.verify_encrypted_shares()
+                total_time_party_verification = time() - temp_time
             decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
 
         total_time_party_reconstruction = time()
