@@ -23,10 +23,10 @@ from crypto99_evoting import *
 
 class ComparisonMetric:
     def evoting_schemes():
-        (pi_s_casting129, pi_s_verification129, pi_s_tallying129) = Pi_sEvotingMetrics.run(3, 129)
+        (pi_s_casting129, pi_s_verification129, pi_s_tallying129) = Pi_sEvotingMetrics.run(3, 65)
         print("Values in seconds for n=129--------------------------")
         print("PI_s: casting:" + str(pi_s_casting129) + ", verification: " + str(pi_s_verification129) + " and tallying: " + str(pi_s_tallying129))
-        (crypto99_casting129, crypto99_verification129, crypto99_tallying129) = Crypto99EvotingMetrics.run(129, 3)
+        (crypto99_casting129, crypto99_verification129, crypto99_tallying129) = Crypto99EvotingMetrics.run(3, 65)
         print("Schoenmakers: casting: " + str(crypto99_casting129) + ", verification: " + str(crypto99_verification129) + " and tallying: " + str(crypto99_tallying129))
 
 
