@@ -25,9 +25,9 @@ class ComparisonMetric:
     def base_schemes():
         (pi_s_sharing129, pi_s_verification129) = Pi_s_Metrics.run(129)
         print("Values for n=129--------------------------")
-        print("PI_s: sharing:" + pi_s_sharing129 + " and verification: " + pi_s_verification129)
+        print("PI_s: sharing:" + str(pi_s_sharing129) + " and verification: " + str(pi_s_verification129))
         (crypto99_sharing129, crypto99_verification129) = Crypto99Metrics.run(129)
-        print("Schoenmakers: sharing: " + crypto99_sharing129 + " and verification: " + crypto99_verification129)
+        print("Schoenmakers: sharing: " + str(crypto99_sharing129) + " and verification: " + str(crypto99_verification129))
 
 
         (pi_s_sharing257, pi_s_verification257) = Pi_s_Metrics.run(257)
