@@ -50,11 +50,13 @@ class Pi_s_Metrics:
 
         self.total_time_party_reconstruction = time() - self.total_time_party_reconstruction
 
-        print("pi_s-----------------------------------------------------------")
-        print("Average time for dealer: ", self.total_time_dealer, " seconds")
-        print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
-        print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
-        print("---------------------------------------------------------------")
+        return (self.total_time_dealer, self.total_time_party_verification)
+
+        #print("pi_s-----------------------------------------------------------")
+        #print("Time for dealer: ", self.total_time_dealer, " seconds")
+        #print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
+        #print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
+        #print("---------------------------------------------------------------")
 
 
 #metrics = Pi_s_Metrics(n)
