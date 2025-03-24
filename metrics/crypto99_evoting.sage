@@ -63,11 +63,11 @@ class Crypto99EvotingMetrics:
             assert secret_vote == p.reconstruction_stage(dec_shares_and_proofs)
             tally_reconstruction_time += time() - temp_time
 
-        print("Schoenmakers99 evoting-----------------------------------------")
-        print("Total time for ballot casting: ", casting_time, " seconds")
-        print("Average vote verification time for ", m, " voters: ", vote_verification_time/m, " seconds")
-        print("Average share verification time for ", n, " talliers: ", share_verification_time/n, " seconds")
-        print("Average vote tallying time for ", t+1, " talliers: ", tally_reconstruction_time/(t+1), " seconds")
-        print("---------------------------------------------------------------")
+        #print("Schoenmakers99 evoting-----------------------------------------")
+        #print("Total time for ballot casting: ", casting_time, " seconds")
+        #print("Average vote verification time for ", m, " voters: ", vote_verification_time/m, " seconds")
+        #print("Average share verification time for ", n, " talliers: ", share_verification_time/n, " seconds")
+        #print("Average vote tallying time for ", t+1, " talliers: ", tally_reconstruction_time/(t+1), " seconds")
+        #print("---------------------------------------------------------------")
 
 # Crypto99EvotingMetrics(9, 9)

@@ -35,7 +35,7 @@ class Pi_sEvotingMetrics:
             if i == 0:
                 temp_time = time()
                 [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
-                casting_time += time() - temp_time
+                casting_time = time() - temp_time
             else:
                 [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
             secret_vote += d.vote
