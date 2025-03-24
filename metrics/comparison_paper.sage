@@ -51,4 +51,4 @@ class ComparisonMetric:
         print("Schoenmakers: sharing: {crypto99_sharing512} and verification: {crypto99_verification512}")
 
 
-        
+ComparisonMetric.base_schemes()
