@@ -28,9 +28,9 @@ class Crypto99Metrics:
             parties[i-1] = p
 
         dealer = Dealer(public_keys, n)
-        total_time_dealer = time()
+        temp_time = time()
         [commitments, encrypted_shares, dealer_proof] = dealer.share_stage()
-        total_time_dealer = time() - total_time_dealer
+        total_time_dealer = time() - temp_time
         secret = fast_multiply(dealer.f(x=0), H)
 
         for i in range(n):
