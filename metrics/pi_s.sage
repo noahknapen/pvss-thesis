@@ -16,9 +16,9 @@ from src_pi_s import *
 #############
 
 class Pi_s_Metrics:
-    def run(self, n):
-        self.n = n
-        self.t = (n-1)//2
+    def run( n):
+        n = n
+        t = (n-1)//2
         public_keys = [0 for _ in range(n)]
         parties = [0 for _ in range(n)]
         decrypted_shares_and_proofs = [0 for _ in range(n)]
@@ -29,33 +29,33 @@ class Pi_s_Metrics:
             parties[i-1] = p
 
         dealer = Dealer(public_keys, n)
-        self.total_time_dealer = time()
+        total_time_dealer = time()
         [encrypted_shares, dealer_proof] = dealer.share_stage()
-        self.total_time_dealer = time() - self.total_time_dealer
+        total_time_dealer = time() - total_time_dealer
         secret = fast_multiply(dealer.f(x=0), G)
 
-        self.total_time_party_verification = time()
+        total_time_party_verification = time()
 
         for i in range(n):
             p = parties[i]
             decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, encrypted_shares, dealer_proof)
 
-        self.total_time_party_verification = time() - self.total_time_party_verification
-        self.total_time_party_reconstruction = time()
+        total_time_party_verification = time() - total_time_party_verification
+        total_time_party_reconstruction = time()
 
         for i in range(n):
             p = parties[i]
             reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
             assert secret == reconstructed_secret
 
-        self.total_time_party_reconstruction = time() - self.total_time_party_reconstruction
+        total_time_party_reconstruction = time() - total_time_party_reconstruction
 
-        return (self.total_time_dealer, self.total_time_party_verification)
+        return (total_time_dealer, total_time_party_verification)
 
         #print("pi_s-----------------------------------------------------------")
-        #print("Time for dealer: ", self.total_time_dealer, " seconds")
-        #print("Average verification time for ", n, " parties: ", self.total_time_party_verification/n, " seconds") #TODO This includes ...
-        #print("Average reconstruction time for ", dealer.t+1, " parties: ", self.total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
+        #print("Time for dealer: ", total_time_dealer, " seconds")
+        #print("Average verification time for ", n, " parties: ", total_time_party_verification/n, " seconds") #TODO This includes ...
+        #print("Average reconstruction time for ", dealer.t+1, " parties: ", total_time_party_reconstruction/(dealer.t+1), " seconds") #TODO This includes ...
         #print("---------------------------------------------------------------")
 
 
