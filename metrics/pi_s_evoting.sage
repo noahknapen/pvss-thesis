@@ -6,10 +6,10 @@ os.system('mv ../src/pi_s_evoting.sage.py ./src_pi_s_evoting.py')
 from src_pi_s_evoting import *
 
 class Pi_sEvotingMetrics:
-    def __init__(self, m, n):
-        self.m = m
-        self.n = n
-        self.t = (n-1)//2
+    def run( m, n):
+        m = m
+        n = n
+        t = (n-1)//2
 
         public_keys = [0 for _ in range(n)]
         parties = [0 for _ in range(n)]
@@ -27,15 +27,16 @@ class Pi_sEvotingMetrics:
             parties[i-1] = p
             public_keys[i-1] = p.broadcast_public_key()
         
-        self.casting_time = 0
-        self.vote_verification_time = 0
+        vote_verification_time = 0
 
         for i in range(m):
             d = Voter(public_keys, n)
             dealers[i] = d
-            temp_time = time()
+            if i == 0:
+                casting_time = time()
             [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
-            self.casting_time += time() - temp_time
+            if i == 0:
+                casting_time += time() - temp_time
             secret_vote += d.vote
             enc_shares[i] = encrypted_shares
             dealer_proofs[i] = dealer_proof
@@ -44,27 +45,28 @@ class Pi_sEvotingMetrics:
 
             temp_time2 = time()
             b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
-            self.vote_verification_time += time() - temp_time2
+            vote_verification_time += time() - temp_time2
 
-        self.share_verification_time = 0
+        share_verification_time = 0
         
         for i in range(n):
             p = parties[i]
             temp_time = time()
             dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
-            self.share_verification_time += time() - temp_time
+            share_verification_time += time() - temp_time
 
-        self.tally_reconstruction_time = 0
+        tally_reconstruction_time = 0
         
         for i in range(n):
             p = parties[i]
             temp_time = time()
-            assert secret_vote == p.reconstruction_stage(dec_shares_and_proofs)
-            self.tally_reconstruction_time += time() - temp_time
+            tally_reconstruction_time += time() - temp_time
+        
+        return (casting_time, vote_verification_time, tally_reconstruction_time) 
 
-        print("pi_s evoting---------------------------------------------------")
-        print("Total time for ballot casting: ", self.casting_time, " seconds")
-        print("Average vote verification time for ", self.m, " voters: ", self.vote_verification_time/m, " seconds")
-        print("Average share verification time for ", self.n, " talliers: ", self.share_verification_time/n, " seconds")
-        print("Average vote tallying time for ", self.t+1, " talliers: ", self.tally_reconstruction_time/(self.t+1), " seconds")
-        print("---------------------------------------------------------------")
+        #print("pi_s evoting---------------------------------------------------")
+        #print("Total time for ballot casting: ", casting_time, " seconds")
+        #print("Average vote verification time for ", m, " voters: ", vote_verification_time/m, " seconds")
+        #print("Average share verification time for ", n, " talliers: ", share_verification_time/n, " seconds")
+        #print("Average vote tallying time for ", t+1, " talliers: ", tally_reconstruction_time/(t+1), " seconds")
+        #print("---------------------------------------------------------------")
