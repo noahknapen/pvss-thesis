@@ -33,7 +33,7 @@ class ComparisonMetric:
         (pi_s_sharing257, pi_s_verification257) = Pi_s_Metrics.run(257)
         print("Values in seconds for n=256--------------------------")
         print("PI_s: sharing: " + str(pi_s_sharing257)  + " and verification: " + str(pi_s_verification257))
-        (crypto99_sharing257, crypto99_verification257) = Crypto99Metrics(257)
+        (crypto99_sharing257, crypto99_verification257) = Crypto99Metrics.run(257)
         print("Schoenmakers: sharing: " + str(crypto99_sharing257) + " and verification: " + str(crypto99_verification257))
 
 
