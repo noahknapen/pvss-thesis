@@ -49,3 +49,5 @@ class ComparisonMetric:
         (crypto99_casting513, crypto99_verification513, crypto99_tallying513) = Crypto99EvotingMetrics.run(3, 513)
         print("Values in seconds for Schoenmakers for n=513----------")
         print("Schoenmakers: casting: " + str(crypto99_casting513) +  ", verification: " + str(crypto99_verification513) + " and tallying: " + str(crypto99_tallying513))
+
+ComparisonMetric.evoting_schemes()
