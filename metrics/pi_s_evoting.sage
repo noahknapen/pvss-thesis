@@ -57,8 +57,10 @@ class Pi_sEvotingMetrics:
             p.store_encrypted_votes(enc_votes)
             if i == 0:
                 temp_time = 0
-                dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
+                p.verify_encrypted_shares()
                 share_verification_time = time() - temp_time
+
+            dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
             
 
         tally_reconstruction_time = 0
