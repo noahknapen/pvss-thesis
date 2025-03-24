@@ -33,17 +33,22 @@ class Crypto99Metrics:
         total_time_dealer = time() - total_time_dealer
         secret = fast_multiply(dealer.f(x=0), H)
 
-        total_time_party_verification = time()
-
         for i in range(n):
             p = parties[i]
+            p.store_public_keys(public_keys)
+            p.store_commitments(commitments)
+            p.store_encrypted_shares_and_proof(dealer_proof)
+            if i == 0:
+                temp_time = time()
+                p.verify_encrypted_shares()
+                total_time_party_verification = time() - temp_time()
             decrypted_shares_and_proofs[i] = p.verification_stage(public_keys, commitments, encrypted_shares, dealer_proof)
 
-        total_time_party_verification = time() - total_time_party_verification
         total_time_party_reconstruction = time()
 
         for i in range(n):
             p = parties[i]
+            
             reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
             assert secret == reconstructed_secret
 

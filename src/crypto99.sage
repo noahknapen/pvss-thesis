@@ -34,14 +34,18 @@ class Party:
         self.public_key = fast_multiply(self.secret_key, H)
 
     def verification_stage(self, public_keys, commitments, encrypted_shares, dealer_proof):
-        self.store_public_keys(public_keys)
-        self.store_commitments(commitments)
-        self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
+        #self.store_public_keys(public_keys)
+        #self.store_commitments(commitments)
+        #self.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
 
-        if self.verify_encrypted_shares():
-            self.generate_decrypted_share()
-            self.dleq_share()
-            return self.broadcast_decrypted_share_and_proof()
+        #if self.verify_encrypted_shares():
+        #    self.generate_decrypted_share()
+        #    self.dleq_share()
+        #    return self.broadcast_decrypted_share_and_proof()
+
+        self.generate_decrypted_share()
+        self.dleq_share()
+        return self.broadcast_decrypted_share_and_proof()
 
     def reconstruction_stage(self, decrypted_shares_and_proofs):
         self.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)
