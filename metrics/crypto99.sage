@@ -37,7 +37,7 @@ class Crypto99Metrics:
             p = parties[i]
             p.store_public_keys(public_keys)
             p.store_commitments(commitments)
-            p.store_encrypted_shares_and_proof(dealer_proof)
+            p.store_encrypted_shares_and_proof(encrypted_shares, dealer_proof)
             if i == 0:
                 temp_time = time()
                 p.verify_encrypted_shares()
