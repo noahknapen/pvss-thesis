@@ -33,7 +33,7 @@ class ComparisonMetric:
         (pi_s_casting257, pi_s_verification257, pi_s_tallying257) = Pi_sEvotingMetrics.run(3, 257)
         print("Values in seconds for n=256--------------------------")
         print("PI_s: casting: " + str(pi_s_casting257)  + ", verification: " + str(pi_s_verification257) + " and tallying: " + str(pi_s_tallying257))
-        (crypto99_casting257, crypto99_verification257, crypto99_tallying257) = Crypto99EvotingMetrics(3, 257)
+        (crypto99_casting257, crypto99_verification257, crypto99_tallying257) = Crypto99EvotingMetrics.run(3, 257)
         print("Schoenmakers: casting: " + str(crypto99_casting257) + ", verification: " + str(crypto99_verification257) + " and tallying: " + str(crypto99_tallying257))
 
 

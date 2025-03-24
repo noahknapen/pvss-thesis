@@ -57,16 +57,22 @@ class Tallier(Party):
         self.valid_decrypted_shares = [0 for _ in range(self.n)]
 
     def verification_stage(self, public_keys, commitments, encrypted_shares, dealer_proof, encrypted_votes):
-        self.store_public_keys(public_keys)
-        self.store_commitments(commitments)
-        self.store_encrypted_shares_and_proofs(encrypted_shares, dealer_proof)
-        self.store_encrypted_votes(encrypted_votes)
+        #self.store_public_keys(public_keys)
+        #self.store_commitments(commitments)
+        #self.store_encrypted_shares_and_proofs(encrypted_shares, dealer_proof)
+        #self.store_encrypted_votes(encrypted_votes)
 
-        if self.verify_encrypted_shares():
-            self.generate_accumulated_encrypted_shares()
-            self.generate_decrypted_share()
-            self.dleq_share()
-            return self.broadcast_decrypted_share_and_proof()
+        #if self.verify_encrypted_shares():
+        #    self.generate_accumulated_encrypted_shares()
+        #    self.generate_decrypted_share()
+        #    self.dleq_share()
+        #    return self.broadcast_decrypted_share_and_proof()
+
+        self.generate_accumulated_encrypted_shares()
+        self.generate_decrypted_share()
+        self.dleq_share()
+        return self.broadcast_decrypted_share_and_proof()
+
 
     def reconstruction_stage(self, decrypted_shares_and_proofs):
         self.store_decrypted_shares_and_proofs(decrypted_shares_and_proofs)

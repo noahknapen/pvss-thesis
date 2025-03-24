@@ -6,7 +6,7 @@ os.system('mv ../src/crypto99_evoting.sage.py ./src_crypto99_evoting.py')
 from src_crypto99_evoting import *
 
 class Crypto99EvotingMetrics:
-    def __init__( m, n):
+    def run( m, n):
         m = m
         n = n
         t = (n-1)//2
@@ -27,15 +27,17 @@ class Crypto99EvotingMetrics:
             parties[i-1] = p
             public_keys[i-1] = p.broadcast_public_key()
 
-        casting_time = 0
         vote_verification_time = 0
 
         for i in range(m):
             d = Voter(public_keys, n)
             dealers[i] = d
-            temp_time = time()
-            [temp_commitments, encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
-            casting_time += time() - temp_time
+            if i == 0:
+                temp_time = time()
+                [temp_commitments, encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
+                casting_time = time() - temp_time
+            else:
+                [temp_commitments, encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
             secret_vote += d.vote
             enc_shares[i] = encrypted_shares
             dealer_proofs[i] = dealer_proof
@@ -43,17 +45,27 @@ class Crypto99EvotingMetrics:
             enc_votes[i] = encrypted_vote
             vote_proofs[i] = vote_proof
 
-            temp_time2 = time()
-            b.verify_adapted_dleqs(temp_commitments[0], encrypted_vote, vote_proof)
-            vote_verification_time += time() - temp_time2
+            if i == 0:
+                temp_time2 = time()
+                b.verify_adapted_dleqs(temp_commitments[0], encrypted_vote, vote_proof)
+                vote_verification_time = time() - temp_time2
         
-        share_verification_time = 0
-
         for i in range(n):
             p = parties[i]
             temp_time = time()
+
+            p.store_public_keys(public_keys)
+            p.store_commitments(commitments)
+            p.store_encrypted_shares_and_proofs(enc_shares, dealer_proofs)
+            p.store_encrypted_votes(enc_votes)
+
+            if i == 0:
+                temp_time = time()
+                p.verify_encrypted_shares()
+                share_verification_time = time() - temp_time
+
+
             dec_shares_and_proofs[i] = p.verification_stage(public_keys, commitments, enc_shares, dealer_proofs, enc_votes)
-            share_verification_time += time() - temp_time
         
         tally_reconstruction_time = 0
 
@@ -62,6 +74,8 @@ class Crypto99EvotingMetrics:
             temp_time = time()
             assert secret_vote == p.reconstruction_stage(dec_shares_and_proofs)
             tally_reconstruction_time += time() - temp_time
+
+        return (casting_time, vote_verification_time+share_verification_time, tally_reconstruction_time) 
 
         #print("Schoenmakers99 evoting-----------------------------------------")
         #print("Total time for ballot casting: ", casting_time, " seconds")
