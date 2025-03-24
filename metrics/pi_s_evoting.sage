@@ -33,36 +33,43 @@ class Pi_sEvotingMetrics:
             d = Voter(public_keys, n)
             dealers[i] = d
             if i == 0:
-                casting_time = time()
-            [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
-            if i == 0:
+                temp_time = time()
+                [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
                 casting_time += time() - temp_time
+            else:
+                [encrypted_shares, dealer_proof, encrypted_vote, vote_proof] = d.share_stage()
             secret_vote += d.vote
             enc_shares[i] = encrypted_shares
             dealer_proofs[i] = dealer_proof
             enc_votes[i] = encrypted_vote
             vote_proofs[i] = vote_proof
 
-            temp_time2 = time()
-            b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
-            vote_verification_time += time() - temp_time2
+            if i == 0:
+                temp_time = time()
+                b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
+                vote_verification_time = time() - temp_time
 
-        share_verification_time = 0
-        
         for i in range(n):
             p = parties[i]
             temp_time = time()
-            dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
-            share_verification_time += time() - temp_time
+            p.store_public_keys(public_keys)
+            p.store_encrypted_shares_and_proofs(list(enc_shares), dealer_proofs)
+            p.store_encrypted_votes(enc_votes)
+            if i == 0:
+                temp_time = 0
+                dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
+                share_verification_time = time() - temp_time
+            
 
         tally_reconstruction_time = 0
         
         for i in range(n):
             p = parties[i]
             temp_time = time()
+            p.reconstruction_stage(dec_shares_and_proofs)
             tally_reconstruction_time += time() - temp_time
         
-        return (casting_time, vote_verification_time, tally_reconstruction_time) 
+        return (casting_time, vote_verification_time+share_verification_time, tally_reconstruction_time) 
 
         #print("pi_s evoting---------------------------------------------------")
         #print("Total time for ballot casting: ", casting_time, " seconds")
