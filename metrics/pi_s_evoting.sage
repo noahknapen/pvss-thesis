@@ -46,7 +46,7 @@ class Pi_sEvotingMetrics:
 
             if i == 0:
                 temp_time = time()
-                b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
+                assert b.verify_adapted_dleqs(encrypted_shares[0], encrypted_vote, vote_proof)
                 vote_verification_time = time() - temp_time
 
         for i in range(n):
@@ -57,7 +57,7 @@ class Pi_sEvotingMetrics:
             p.store_encrypted_votes(enc_votes)
             if i == 0:
                 temp_time = time()
-                p.verify_encrypted_shares()
+                assert p.verify_encrypted_shares()
                 share_verification_time = time() - temp_time
 
             dec_shares_and_proofs[i] = p.verification_stage(public_keys, list(enc_shares), dealer_proofs, enc_votes)
