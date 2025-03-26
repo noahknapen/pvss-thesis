@@ -47,7 +47,7 @@ class Crypto99EvotingMetrics:
 
             if i == 0:
                 temp_time2 = time()
-                b.verify_adapted_dleqs(temp_commitments[0], encrypted_vote, vote_proof)
+                assert b.verify_adapted_dleqs(temp_commitments[0], encrypted_vote, vote_proof)
                 vote_verification_time = time() - temp_time2
         
         for i in range(n):
@@ -61,7 +61,7 @@ class Crypto99EvotingMetrics:
 
             if i == 0:
                 temp_time = time()
-                p.verify_encrypted_shares()
+                assert p.verify_encrypted_shares()
                 share_verification_time = time() - temp_time
 
 
