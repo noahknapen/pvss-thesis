@@ -130,7 +130,7 @@ class Party:
             if d == reconstructed_d:
                 self.valid_decrypted_shares.append(decrypted_share)
             else:
-                self.valid_decrypted_shares.append(0)
+                raise Exception
 
     def lambda_func(self, i):
         lambda_i = Zq(1)
