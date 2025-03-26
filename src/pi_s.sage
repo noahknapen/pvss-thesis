@@ -97,7 +97,7 @@ class Party:
         d += str(c2)
 
         d = Integer(Zq(int(sha256(str(d).encode()).hexdigest(),16)))
-        z = r + d*self.secret_key
+        z = Integer(Zq(int(r + d*self.secret_key)))
 
         self.share_proof = [d,z]
 
