@@ -50,6 +50,8 @@ class Crypto99Metrics:
             p = parties[i]
             
             reconstructed_secret = p.reconstruction_stage(decrypted_shares_and_proofs)
+            print("secret: " +secret)
+            print("reconstructed secret: " + reconstructed_secret)
             assert secret == reconstructed_secret
 
         total_time_party_reconstruction = time() - total_time_party_reconstruction

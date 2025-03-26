@@ -68,7 +68,10 @@ class Pi_sEvotingMetrics:
         for i in range(n):
             p = parties[i]
             temp_time = time()
-            p.reconstruction_stage(dec_shares_and_proofs)
+            reconstructed_secret = p.reconstruction_stage(dec_shares_and_proofs)
+            print("secret: " + secret_vote)
+            print("reconstructed secret: " + reconstructed_secret)
+            assert secret_vote == reconstructed_secret
             tally_reconstruction_time += time() - temp_time
         
         return (casting_time, vote_verification_time+share_verification_time, tally_reconstruction_time) 
