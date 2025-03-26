@@ -23,17 +23,17 @@ from crypto99_evoting import *
 
 class ComparisonMetric:
     def evoting_schemes():
-        (pi_s_casting129, pi_s_verification129, pi_s_tallying129) = Pi_sEvotingMetrics.run(3, 65)
+        (pi_s_casting129, pi_s_verification129, pi_s_tallying129) = Pi_sEvotingMetrics.run(15, 17)
         print("Values in seconds for n=129--------------------------")
         print("PI_s: casting:" + str(pi_s_casting129) + ", verification: " + str(pi_s_verification129) + " and tallying: " + str(pi_s_tallying129))
-        (crypto99_casting129, crypto99_verification129, crypto99_tallying129) = Crypto99EvotingMetrics.run(3, 65)
+        (crypto99_casting129, crypto99_verification129, crypto99_tallying129) = Crypto99EvotingMetrics.run(15, 17)
         print("Schoenmakers: casting: " + str(crypto99_casting129) + ", verification: " + str(crypto99_verification129) + " and tallying: " + str(crypto99_tallying129))
 
 
-        (pi_s_casting257, pi_s_verification257, pi_s_tallying257) = Pi_sEvotingMetrics.run(3, 257)
+        (pi_s_casting257, pi_s_verification257, pi_s_tallying257) = Pi_sEvotingMetrics.run(15, 33)
         print("Values in seconds for n=256--------------------------")
         print("PI_s: casting: " + str(pi_s_casting257)  + ", verification: " + str(pi_s_verification257) + " and tallying: " + str(pi_s_tallying257))
-        (crypto99_casting257, crypto99_verification257, crypto99_tallying257) = Crypto99EvotingMetrics.run(3, 257)
+        (crypto99_casting257, crypto99_verification257, crypto99_tallying257) = Crypto99EvotingMetrics.run(15, 33)
         print("Schoenmakers: casting: " + str(crypto99_casting257) + ", verification: " + str(crypto99_verification257) + " and tallying: " + str(crypto99_tallying257))
 
 
